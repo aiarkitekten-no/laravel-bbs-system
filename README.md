@@ -1,68 +1,190 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# PUNKTET BBS
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+> *Nostalgi møter fremtiden*
 
-## About Laravel
+PUNKTET er et moderne BBS-system (Bulletin Board System) som gjenskaper opplevelsen fra 80- og 90-tallets BBSer, bygget med moderne teknologi.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## ✨ Funksjoner
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 🔐 Autentisering & Brukere
+- Registrering med handle/brukernavn
+- Sanctum token-autentisering
+- Brukernivåer (GUEST → SYSOP)
+- Tidsbegrensning per nivå
+- IP-sporing og sikkerhet
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 💬 Meldingsområder
+- Kategori-baserte forum
+- Tråd-visning
+- Quoting av meldinger
+- Søk i meldinger
+- Uleste meldinger
 
-## Learning Laravel
+### 📨 Private Meldinger
+- Innboks/utboks
+- CC til flere mottakere
+- Lesebekreftelse
+- Meldings-mapper
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 📖 Stories
+- Dagens historie
+- Rating-system
+- Kommentarer
+- Arkiv
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 💻 Oneliners
+- BBS-klassiker!
+- Siste 10 oneliners
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 📁 Filområde
+- Kategoriserte filer
+- Upload/download
+- Ratio-system
+- Søk i filer
+- NFO/DIZ support
 
-## Laravel Sponsors
+### 🎮 Door Games
+- Klassiske BBS-spill
+- High score lister
+- Daglige spillbegrensninger
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 🎨 ANSI Art
+- ANSI art galleri
+- SAUCE-støtte
+- Kategorier
 
-### Premium Partners
+### 📊 Avstemninger
+- Opprett avstemninger
+- Flervalg støtte
+- Resultater
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### 🌐 Sosiale Funksjoner
+- Tidsbank
+- Brukerklubber
+- Graffiti Wall
+- Bursdagsliste
+- Awards
 
-## Contributing
+### ⚙️ Admin/SysOp
+- Dashboard med statistikk
+- Brukeradministrasjon
+- Systemkonfigurasjon
+- Caller log
+- Vedlikeholdsmodus
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 🛠 Teknologi
 
-## Code of Conduct
+- **Backend**: Laravel 10.x
+- **Database**: MariaDB/MySQL
+- **Autentisering**: Laravel Sanctum
+- **Cache**: File/Redis
+- **API**: RESTful JSON
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 📋 Systemkrav
 
-## Security Vulnerabilities
+- PHP 8.2+
+- MariaDB 10.6+ / MySQL 8.0+
+- Composer 2.x
+- Apache/Nginx med mod_rewrite
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 🚀 Installasjon
 
-## License
+```bash
+# Klon repo
+git clone https://github.com/punktet/bbs.git
+cd bbs
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-# laravel-bbs-system
-# laravel-bbs-system
+# Installer avhengigheter
+composer install
+
+# Kopier miljøfil
+cp .env.example .env
+
+# Generer app-nøkkel
+php artisan key:generate
+
+# Konfigurer database i .env
+# VIKTIG: Bruk DB_CONNECTION=mysql (ikke mariadb)
+
+# Kjør migrasjoner
+php artisan migrate
+
+# Seed testdata (valgfritt)
+php artisan db:seed
+
+# Start utviklingsserver
+php artisan serve
+```
+
+## 📚 Dokumentasjon
+
+- [API Dokumentasjon](docs/API.md)
+- [Deployment Guide](docs/DEPLOYMENT.md)
+
+## 🔌 API Endepunkter
+
+Se [API.md](docs/API.md) for komplett dokumentasjon.
+
+### Hurtigoversikt
+
+| Metode | Endepunkt | Beskrivelse |
+|--------|-----------|-------------|
+| POST | `/api/auth/login` | Logg inn |
+| GET | `/api/whos-online` | Hvem er online |
+| GET | `/api/categories` | Meldingsområder |
+| GET | `/api/oneliners` | Oneliners |
+| GET | `/api/stories/today` | Dagens historie |
+| GET | `/api/health/ping` | Health check |
+
+## 🔒 Sikkerhet
+
+- Rate limiting per brukernivå
+- Input sanitering
+- CSRF-beskyttelse
+- Security headers
+- IP-logging
+- Brute force beskyttelse
+
+## 📊 Brukernivåer
+
+| Nivå | Kode | Tid/dag | API calls/min |
+|------|------|---------|---------------|
+| Gjest | GUEST | 15 min | 30 |
+| Ny | NEW | 30 min | 45 |
+| Medlem | MEMBER | 60 min | 60 |
+| Verifisert | VERIFIED | 90 min | 80 |
+| Elite | ELITE | 180 min | 100 |
+| CoSysOp | COSYSOP | Ubegrenset | 150 |
+| SysOp | SYSOP | Ubegrenset | 200 |
+
+## 🌍 Språk
+
+- 🇳🇴 Norsk (standard)
+- 🇬🇧 English
+
+## 📜 Lisens
+
+MIT License
+
+## 👤 Forfatter
+
+**PUNKTET Team**
+- SysOp: Terje
+- E-post: sysop@punktet.no
+
+---
+
+```
+╔══════════════════════════════════════════════════════════╗
+║                                                          ║
+║     ██████╗ ██╗   ██╗███╗   ██╗██╗  ██╗████████╗        ║
+║     ██╔══██╗██║   ██║████╗  ██║██║ ██╔╝╚══██╔══╝        ║
+║     ██████╔╝██║   ██║██╔██╗ ██║█████╔╝    ██║           ║
+║     ██╔═══╝ ██║   ██║██║╚██╗██║██╔═██╗    ██║           ║
+║     ██║     ╚██████╔╝██║ ╚████║██║  ██╗   ██║           ║
+║     ╚═╝      ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝   ╚═╝           ║
+║                                                          ║
+║          «NOSTALGI MØTER FREMTIDEN»                      ║
+║                                                          ║
+╚══════════════════════════════════════════════════════════╝
+```

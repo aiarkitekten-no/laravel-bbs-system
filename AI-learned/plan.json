@@ -1,8 +1,8 @@
 {
   "_meta": {
     "description": "Prosjektplan for PUNKTET BBS - Laravel + MariaDB",
-    "updated": "2025-11-27 12:20",
-    "version": 4,
+    "updated": "2025-11-28 10:30",
+    "version": 5,
     "total_phases": 13,
     "total_functions": 111,
     "completed_phases": [
@@ -12,7 +12,10 @@
       3,
       4,
       5,
-      6
+      6,
+      7,
+      8,
+      9
     ]
   },
   "project": {

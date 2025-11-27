@@ -14,5 +14,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
+    return view('terminal');
+});
+
+Route::get('/terminal', function () {
+    return view('terminal');
+})->name('terminal');
+
+// Legacy welcome page (for testing)
+Route::get('/welcome', function () {
     return view('welcome');
 });

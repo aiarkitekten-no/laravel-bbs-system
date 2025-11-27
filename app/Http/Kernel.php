@@ -21,6 +21,7 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        \App\Http\Middleware\SecurityHeaders::class,
     ];
 
     /**
@@ -40,7 +41,8 @@ class Kernel extends HttpKernel
 
         'api' => [
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
+            \App\Http\Middleware\ApiRateLimiter::class,
+            \App\Http\Middleware\SanitizeInput::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
@@ -69,5 +71,8 @@ class Kernel extends HttpKernel
         'locale' => \App\Http\Middleware\SetLocale::class,
         'activity' => \App\Http\Middleware\UpdateLastActivity::class,
         'time.check' => \App\Http\Middleware\CheckTimeRemaining::class,
+        'rate.limit' => \App\Http\Middleware\ApiRateLimiter::class,
+        'sanitize' => \App\Http\Middleware\SanitizeInput::class,
+        'security.headers' => \App\Http\Middleware\SecurityHeaders::class,
     ];
 }

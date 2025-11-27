@@ -57,33 +57,51 @@ class NodeController extends Controller
     }
 
     /**
-     * Who's Online
+     * Who's Online - Shows ALL nodes (active and inactive)
      */
     public function whosOnline(): JsonResponse
     {
-        $onlineNodes = Node::with('currentUser')
-            ->whereNotNull('current_user_id')
+        $allNodes = Node::with('currentUser')
             ->orderBy('node_number')
             ->get();
 
-        $users = $onlineNodes->map(function ($node) {
-            return [
-                'node' => $node->node_number,
-                'handle' => $node->currentUser->handle,
-                'level' => $node->currentUser->level,
-                'location' => $node->currentUser->location,
-                'activity' => $node->current_activity,
-                'connected_at' => $node->user_connected_at?->toIso8601String(),
-                'is_bot' => $node->currentUser->is_bot,
-            ];
+        $nodes = $allNodes->map(function ($node) {
+            if ($node->current_user_id && $node->currentUser) {
+                return [
+                    'node_number' => $node->node_number,
+                    'status' => 'active',
+                    'handle' => $node->currentUser->handle,
+                    'level' => $node->currentUser->level,
+                    'location' => $node->currentUser->location ?? 'Unknown',
+                    'activity' => $node->current_activity ?? 'Browsing',
+                    'connected_at' => $node->user_connected_at?->toIso8601String(),
+                    'time_online' => $node->user_connected_at 
+                        ? $node->user_connected_at->diffForHumans(null, true) 
+                        : null,
+                    'is_bot' => $node->currentUser->is_bot ?? false,
+                ];
+            } else {
+                return [
+                    'node_number' => $node->node_number,
+                    'status' => 'inactive',
+                    'handle' => null,
+                    'level' => null,
+                    'location' => null,
+                    'activity' => 'Waiting for caller...',
+                    'connected_at' => null,
+                    'time_online' => null,
+                    'is_bot' => false,
+                ];
+            }
         });
+
+        $onlineCount = $nodes->where('status', 'active')->count();
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'online_count' => $users->count(),
-                'users' => $users,
-            ],
+            'data' => $nodes,
+            'online_count' => $onlineCount,
+            'total_nodes' => $nodes->count(),
         ]);
     }
 

@@ -220,7 +220,42 @@ class Node extends Model
 
     public static function getFirstAvailable(): ?self
     {
-        return self::available()->orderBy('node_number')->first();
+        // Try to get an existing available node first
+        $node = self::available()->orderBy('node_number')->first();
+        
+        if ($node) {
+            return $node;
+        }
+        
+        // All nodes are occupied - create a VIP node
+        return self::createVipNode();
+    }
+
+    /**
+     * Create a VIP node when all regular nodes are occupied
+     */
+    public static function createVipNode(): self
+    {
+        // Find the highest node number
+        $maxNode = self::max('node_number') ?? 6;
+        $vipNodeNumber = $maxNode + 1;
+        
+        // Check if this VIP node already exists
+        $existingVip = self::where('node_number', $vipNodeNumber)
+            ->whereNull('current_user_id')
+            ->first();
+            
+        if ($existingVip) {
+            return $existingVip;
+        }
+        
+        // Create new VIP node
+        return self::create([
+            'node_number' => $vipNodeNumber,
+            'status' => self::STATUS_ONLINE,
+            'is_active' => true,
+            'description' => 'VIP Node #' . $vipNodeNumber,
+        ]);
     }
 
     public static function getOnlineUsers(): \Illuminate\Database\Eloquent\Collection

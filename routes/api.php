@@ -8,6 +8,14 @@ use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\PrivateMessageController;
 use App\Http\Controllers\Api\StoryController;
 use App\Http\Controllers\Api\OnelinerController;
+use App\Http\Controllers\Api\FileController;
+use App\Http\Controllers\Api\GameController;
+use App\Http\Controllers\Api\AnsiArtController;
+use App\Http\Controllers\Api\PollController;
+use App\Http\Controllers\Api\BulletinController;
+use App\Http\Controllers\Api\SocialController;
+use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\HealthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +27,10 @@ use App\Http\Controllers\Api\OnelinerController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+// Health check routes (no middleware)
+Route::get('/health/ping', [HealthController::class, 'ping']);
+Route::get('/health/status', [HealthController::class, 'status']);
 
 // Apply locale middleware to all API routes
 Route::middleware(['locale'])->group(function () {
@@ -55,6 +67,9 @@ Route::middleware(['locale'])->group(function () {
     Route::get('/categories/{categoryId}/threads', [MessageController::class, 'threads']);
     Route::get('/threads/{threadId}/messages', [MessageController::class, 'messages']);
 
+    // Conferences (public list)
+    Route::get('/conferences', [App\Http\Controllers\Api\ConferenceController::class, 'index']);
+
     // ==========================================
     // AUTHENTICATED ROUTES
     // ==========================================
@@ -67,6 +82,12 @@ Route::middleware(['locale'])->group(function () {
             Route::get('/me', [AuthController::class, 'me']);
             Route::put('/profile', [AuthController::class, 'updateProfile']);
             Route::put('/password', [AuthController::class, 'changePassword']);
+        });
+
+        // Conferences (authenticated)
+        Route::prefix('conferences')->group(function () {
+            Route::post('/{conferenceId}/join', [App\Http\Controllers\Api\ConferenceController::class, 'join']);
+            Route::get('/current', [App\Http\Controllers\Api\ConferenceController::class, 'current']);
         });
 
         // Node operations (requires being on a node)
@@ -148,11 +169,163 @@ Route::middleware(['locale'])->group(function () {
             Route::get('/oneliners/pending', [OnelinerController::class, 'pending']);
             Route::post('/oneliners/{onelinerId}/approve', [OnelinerController::class, 'approve']);
             Route::post('/oneliners/{onelinerId}/reject', [OnelinerController::class, 'reject']);
+
+            // File approval
+            Route::prefix('files')->group(function () {
+                Route::get('/pending', [FileController::class, 'pending']);
+                Route::post('/{fileId}/approve', [FileController::class, 'approve']);
+                Route::post('/{fileId}/reject', [FileController::class, 'reject']);
+                Route::get('/requests', [FileController::class, 'requests']);
+                Route::post('/requests/{requestId}/fulfill', [FileController::class, 'fulfillRequest']);
+            });
         });
 
         // SysOp only routes
         Route::middleware(['level:SYSOP'])->group(function () {
-            // Admin features will be added in later phases
+            // ==========================================
+            // ADMIN & SYSOP DASHBOARD (Phase 11)
+            // ==========================================
+            
+            Route::prefix('admin')->group(function () {
+                // Dashboard & Stats
+                Route::get('/dashboard', [AdminController::class, 'dashboard']);
+                Route::get('/caller-log', [AdminController::class, 'callerLog']);
+                Route::get('/top-users', [AdminController::class, 'topUsers']);
+                Route::get('/system-stats', [AdminController::class, 'systemStats']);
+                Route::get('/report', [AdminController::class, 'report']);
+                Route::get('/peak-hours', [AdminController::class, 'peakHours']);
+                Route::get('/message-volume', [AdminController::class, 'messageVolume']);
+                Route::get('/user-rankings', [AdminController::class, 'userRankings']);
+                Route::get('/yearly-stats', [AdminController::class, 'yearlyStats']);
+                
+                // User Management
+                Route::get('/users', [AdminController::class, 'users']);
+                Route::get('/users/{userId}', [AdminController::class, 'userShow']);
+                Route::put('/users/{userId}', [AdminController::class, 'userUpdate']);
+                Route::delete('/users/{userId}', [AdminController::class, 'userDelete']);
+                Route::get('/users/{userId}/ips', [AdminController::class, 'userIps']);
+                
+                // System Configuration
+                Route::get('/config', [AdminController::class, 'config']);
+                Route::put('/config', [AdminController::class, 'configUpdate']);
+                Route::post('/maintenance', [AdminController::class, 'maintenance']);
+                Route::post('/clear-cache', [AdminController::class, 'clearCache']);
+                
+                // Activity & Logs
+                Route::get('/activity-logs', [AdminController::class, 'activityLogs']);
+                
+                // System Health & Diagnostics
+                Route::get('/diagnostics', [HealthController::class, 'diagnostics']);
+                
+                // RSS Feed
+                Route::get('/rss', [AdminController::class, 'rssFeed']);
+            });
+        });
+
+        // ==========================================
+        // FILE AREA (Phase 7)
+        // ==========================================
+
+        Route::prefix('files')->group(function () {
+            Route::get('/categories', [FileController::class, 'categories']);
+            Route::get('/categories/{categoryId}', [FileController::class, 'list']);
+            Route::get('/search', [FileController::class, 'search']);
+            Route::get('/new', [FileController::class, 'newSince']);
+            Route::get('/top-uploaders', [FileController::class, 'topUploaders']);
+            Route::post('/duplicate-check', [FileController::class, 'duplicateCheck']);
+            Route::post('/upload', [FileController::class, 'upload']);
+            Route::get('/{fileId}', [FileController::class, 'show']);
+            Route::get('/{fileId}/download', [FileController::class, 'download']);
+            Route::post('/requests', [FileController::class, 'createRequest']);
+            Route::get('/requests/open', [FileController::class, 'openRequests']);
+        });
+
+        // ==========================================
+        // DOOR GAMES (Phase 8)
+        // ==========================================
+
+        Route::prefix('games')->group(function () {
+            Route::get('/', [GameController::class, 'index']);
+            Route::get('/highscores', [GameController::class, 'globalHighscores']);
+            Route::get('/achievements', [GameController::class, 'achievements']);
+            Route::get('/my-achievements', [GameController::class, 'myAchievements']);
+            Route::get('/{slug}', [GameController::class, 'show']);
+            Route::post('/{slug}/start', [GameController::class, 'start']);
+            Route::post('/{slug}/action', [GameController::class, 'action']);
+            Route::get('/{slug}/highscores', [GameController::class, 'highscores']);
+            Route::get('/{slug}/state', [GameController::class, 'getState']);
+        });
+
+        // ==========================================
+        // ANSI ART GALLERY (Phase 10)
+        // ==========================================
+
+        Route::prefix('ansi')->group(function () {
+            Route::get('/', [AnsiArtController::class, 'index']);
+            Route::get('/categories', [AnsiArtController::class, 'categories']);
+            Route::get('/random', [AnsiArtController::class, 'random']);
+            Route::get('/favorites', [AnsiArtController::class, 'myFavorites']);
+            Route::get('/{id}', [AnsiArtController::class, 'show']);
+            Route::post('/', [AnsiArtController::class, 'store']);
+            Route::post('/{id}/view', [AnsiArtController::class, 'view']);
+            Route::post('/{id}/favorite', [AnsiArtController::class, 'toggleFavorite']);
+        });
+
+        // ==========================================
+        // POLLS / VOTING BOOTH (Phase 10)
+        // ==========================================
+
+        Route::prefix('polls')->group(function () {
+            Route::get('/', [PollController::class, 'index']);
+            Route::get('/active', [PollController::class, 'active']);
+            Route::get('/ended', [PollController::class, 'ended']);
+            Route::get('/my-votes', [PollController::class, 'myVotes']);
+            Route::get('/{id}', [PollController::class, 'show']);
+            Route::post('/', [PollController::class, 'create']);
+            Route::post('/{id}/vote', [PollController::class, 'vote']);
+        });
+
+        // ==========================================
+        // BULLETINS & BBS INFO (Phase 10)
+        // ==========================================
+
+        Route::prefix('bulletin')->group(function () {
+            Route::get('/', [BulletinController::class, 'bulletins']);
+            Route::get('/bbs-links', [BulletinController::class, 'bbsLinks']);
+            Route::get('/logoff-quote', [BulletinController::class, 'logoffQuote']);
+            Route::get('/system-info', [BulletinController::class, 'systemInfo']);
+            Route::get('/{id}', [BulletinController::class, 'show']);
+        });
+
+        // ==========================================
+        // SOCIAL FEATURES (Phase 10)
+        // ==========================================
+
+        Route::prefix('social')->group(function () {
+            // Time Bank
+            Route::get('/time-bank', [SocialController::class, 'timeBank']);
+            Route::post('/time-bank/deposit', [SocialController::class, 'timeBankDeposit']);
+            Route::post('/time-bank/withdraw', [SocialController::class, 'timeBankWithdraw']);
+            Route::get('/time-bank/history', [SocialController::class, 'timeBankHistory']);
+            
+            // User Clubs
+            Route::get('/clubs', [SocialController::class, 'clubs']);
+            Route::get('/clubs/{id}', [SocialController::class, 'showClub']);
+            Route::post('/clubs', [SocialController::class, 'createClub']);
+            Route::post('/clubs/{id}/join', [SocialController::class, 'joinClub']);
+            Route::delete('/clubs/{id}/leave', [SocialController::class, 'leaveClub']);
+            
+            // Awards
+            Route::get('/awards', [SocialController::class, 'awards']);
+            Route::get('/awards/month/{year}/{month}', [SocialController::class, 'awardsByMonth']);
+            
+            // Graffiti Wall
+            Route::get('/graffiti', [SocialController::class, 'graffitiWall']);
+            Route::post('/graffiti', [SocialController::class, 'createGraffiti']);
+            Route::delete('/graffiti/{id}', [SocialController::class, 'deleteGraffiti']);
+            
+            // Birthdays
+            Route::get('/birthdays', [SocialController::class, 'birthdays']);
         });
     });
 });
