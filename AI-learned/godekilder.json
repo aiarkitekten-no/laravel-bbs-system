@@ -1,0 +1,21 @@
+{
+  "_meta": {
+    "description": "Verifiserte gode kilder på nett",
+    "updated": "2025-11-27 00:00",
+    "version": 1
+  },
+  "sources": [
+    {
+      "url": "https://laravel.com/docs/10.x",
+      "topic": "Laravel 10 offisiell dokumentasjon",
+      "reliability": "official",
+      "added": "2025-11-27"
+    },
+    {
+      "url": "https://mariadb.com/kb/en/documentation/",
+      "topic": "MariaDB offisiell dokumentasjon",
+      "reliability": "official",
+      "added": "2025-11-27"
+    }
+  ]
+}

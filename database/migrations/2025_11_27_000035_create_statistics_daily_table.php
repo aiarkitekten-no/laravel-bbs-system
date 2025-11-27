@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('statistics_daily', function (Blueprint $table) {
+            $table->id();
+            $table->date('stat_date')->unique();
+            $table->integer('total_logins')->default(0);
+            $table->integer('unique_users')->default(0);
+            $table->integer('new_users')->default(0);
+            $table->integer('messages_posted')->default(0);
+            $table->integer('files_uploaded')->default(0);
+            $table->integer('files_downloaded')->default(0);
+            $table->integer('games_played')->default(0);
+            $table->integer('peak_online')->default(0);
+            $table->time('peak_online_time')->nullable();
+            $table->json('hourly_activity')->nullable(); // logins per hour
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('statistics_daily');
+    }
+};

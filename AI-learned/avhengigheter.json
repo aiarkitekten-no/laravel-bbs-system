@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "description": "Godkjente composer og npm pakker",
+    "updated": "2025-11-27 01:00",
+    "version": 2
+  },
+  "composer": [
+    {
+      "package": "laravel/framework",
+      "version": "^10.49.1",
+      "reason": "Hovedframework",
+      "approved": "2025-11-27",
+      "status": "installed"
+    },
+    {
+      "package": "laravel/sanctum",
+      "version": "^3.3.3",
+      "reason": "API autentisering",
+      "approved": "2025-11-27",
+      "status": "installed"
+    },
+    {
+      "package": "laravel/tinker",
+      "version": "^2.10.2",
+      "reason": "Debug og testing",
+      "approved": "2025-11-27",
+      "status": "installed"
+    }
+  ],
+  "npm": [],
+  "system": [
+    {
+      "package": "clamav",
+      "reason": "Virusscanning av opplastede filer",
+      "approved": "2025-11-27",
+      "status": "pending_install"
+    }
+  ]
+}

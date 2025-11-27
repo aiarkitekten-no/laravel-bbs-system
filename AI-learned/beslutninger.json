@@ -1,0 +1,41 @@
+{
+  "_meta": {
+    "description": "Arkitektur- og designbeslutninger tatt i prosjektet",
+    "updated": "2025-11-27 00:00",
+    "version": 1
+  },
+  "decisions": [
+    {
+      "id": 1,
+      "date": "2025-11-27",
+      "decision": "Bruk Laravel 10.x som backend framework",
+      "reason": "Stabil LTS-versjon med god dokumentasjon",
+      "alternatives_considered": ["Laravel 11", "Lumen", "Symfony"],
+      "status": "approved"
+    },
+    {
+      "id": 2,
+      "date": "2025-11-27",
+      "decision": "MariaDB som database",
+      "reason": "Kompatibel med MySQL, brukerens valg",
+      "alternatives_considered": ["MySQL", "PostgreSQL"],
+      "status": "approved"
+    },
+    {
+      "id": 3,
+      "date": "2025-11-27",
+      "decision": "Vanilla JavaScript for terminal-frontend",
+      "reason": "Autentisk BBS-opplevelse, ingen tunge frameworks",
+      "alternatives_considered": ["React", "Vue"],
+      "status": "approved"
+    },
+    {
+      "id": 4,
+      "date": "2025-11-27",
+      "decision": "Flerspråkstøtte med EN som default, NO valgbar",
+      "reason": "Brukerens krav",
+      "alternatives_considered": [],
+      "status": "approved"
+    }
+  ]
+}

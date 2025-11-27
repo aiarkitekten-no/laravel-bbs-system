@@ -1,0 +1,1290 @@
+{
+  "_meta": {
+    "description": "Prosjektplan for PUNKTET BBS - Laravel + MariaDB",
+    "updated": "2025-11-27 12:20",
+    "version": 4,
+    "total_phases": 13,
+    "total_functions": 111,
+    "completed_phases": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ]
+  },
+  "project": {
+    "name": "PUNKTET BBS",
+    "path": "/var/www/vhosts/punktet.no/httpdocs",
+    "document_root": "/var/www/vhosts/punktet.no/httpdocs/public",
+    "techstack": {
+      "backend": "Laravel 10.x",
+      "database": "MariaDB",
+      "frontend": "Vanilla JavaScript",
+      "php": "8.1+",
+      "server": "Apache"
+    },
+    "database": {
+      "host": "localhost",
+      "name": "admin_punkteT",
+      "user": "admin_punkteT",
+      "password_hint": "Se .env fil"
+    },
+    "superuser": {
+      "email": "terje@smartesider.no",
+      "role": "SYSOP"
+    },
+    "languages": {
+      "default": "en",
+      "available": [
+        "en",
+        "no"
+      ]
+    }
+  },
+  "phases": [
+    {
+      "id": 0,
+      "name": "Fundament",
+      "status": "completed",
+      "started": "2025-11-27",
+      "completed": "2025-11-27",
+      "tasks": [
+        {
+          "task": "Opprett GUARDRAILS.md",
+          "status": "done"
+        },
+        {
+          "task": "Opprett AI-learned mappe",
+          "status": "done"
+        },
+        {
+          "task": "Opprett plan.json",
+          "status": "done"
+        },
+        {
+          "task": "Verifiser mappestruktur",
+          "status": "done"
+        }
+      ],
+      "before_start": [
+        "Les GUARDRAILS.md",
+        "Les AI-learned/feil.json",
+        "Les AI-learned/fungerer.json"
+      ],
+      "after_complete": [
+        "Oppdater AI-learned/fungerer.json med det som virket",
+        "Oppdater AI-learned/feil.json med eventuelle feil",
+        "Oppdater plan.json status"
+      ],
+      "functions": []
+    },
+    {
+      "id": 1,
+      "name": "Laravel Installasjon",
+      "status": "completed",
+      "started": "2025-11-27",
+      "completed": "2025-11-27",
+      "tasks": [
+        {
+          "task": "Installer Laravel 10.x via Composer",
+          "status": "done"
+        },
+        {
+          "task": "Konfigurer .env med database-credentials",
+          "status": "done"
+        },
+        {
+          "task": "Verifiser database-tilkobling",
+          "status": "done"
+        },
+        {
+          "task": "Test at Laravel fungerer",
+          "status": "done"
+        },
+        {
+          "task": "Sett opp grunnleggende routes",
+          "status": "done"
+        }
+      ],
+      "before_start": [
+        "Les GUARDRAILS.md",
+        "Les AI-learned/feil.json",
+        "Les AI-learned/fungerer.json",
+        "Bekreft Fase 0 er FULLSTENDIG ferdig"
+      ],
+      "after_complete": [
+        "Oppdater AI-learned/fungerer.json",
+        "Oppdater AI-learned/feil.json",
+        "Oppdater AI-learned/avhengigheter.json",
+        "Oppdater plan.json status"
+      ],
+      "functions": []
+    },
+    {
+      "id": 2,
+      "name": "Database Schema",
+      "status": "completed",
+      "started": "2025-11-27",
+      "completed": "2025-11-27",
+      "tasks": [
+        {
+          "task": "Opprett migration: users (med nivåer, stats, profil)",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: nodes (6 noder)",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: node_activity",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: bot_users (50+ bots)",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: categories (7 stk)",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: stories",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: story_votes",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: story_comments",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: messages (forum)",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: message_threads",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: private_messages",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: files",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: file_categories",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: games",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: game_scores",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: user_credits",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: oneliners",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: bulletins",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: user_clubs",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: achievements",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: user_achievements",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: activity_log",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: settings",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: ansi_art",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: graffiti_wall",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: votes (polls)",
+          "status": "done"
+        },
+        {
+          "task": "Opprett migration: time_bank",
+          "status": "done"
+        },
+        {
+          "task": "Kjør alle migrasjoner",
+          "status": "done"
+        },
+        {
+          "task": "Opprett seeder: SuperUser (terje@smartesider.no)",
+          "status": "done"
+        },
+        {
+          "task": "Opprett seeder: BotUsers (50+)",
+          "status": "done"
+        },
+        {
+          "task": "Opprett seeder: Categories (7 stk)",
+          "status": "done"
+        },
+        {
+          "task": "Opprett seeder: Nodes (6 stk)",
+          "status": "done"
+        },
+        {
+          "task": "Kjør seeders",
+          "status": "done"
+        }
+      ],
+      "before_start": [
+        "Les GUARDRAILS.md",
+        "Les AI-learned/feil.json",
+        "Les AI-learned/fungerer.json",
+        "Bekreft Fase 1 er FULLSTENDIG ferdig"
+      ],
+      "after_complete": [
+        "Oppdater AI-learned/fungerer.json",
+        "Oppdater AI-learned/feil.json",
+        "Oppdater plan.json status"
+      ],
+      "functions": []
+    },
+    {
+      "id": 3,
+      "name": "Autentisering & Brukersystem",
+      "status": "completed",
+      "started": "2025-11-27",
+      "completed": "2025-11-27",
+      "tasks": [
+        {
+          "task": "User model med relasjoner",
+          "status": "done"
+        },
+        {
+          "task": "Brukerregistrering (komplett)",
+          "status": "done"
+        },
+        {
+          "task": "Innlogging med sesjon",
+          "status": "done"
+        },
+        {
+          "task": "Gjesteinnlogging",
+          "status": "done"
+        },
+        {
+          "task": "Brukernivåer: GUEST, USER, ELITE, COSYSOP, SYSOP",
+          "status": "done"
+        },
+        {
+          "task": "Brukerstatistikk (logins, tid, meldinger)",
+          "status": "done"
+        },
+        {
+          "task": "Last seen tracking",
+          "status": "done"
+        },
+        {
+          "task": "Brukerprofiler (bio, lokasjon, signatur)",
+          "status": "done"
+        },
+        {
+          "task": "Passordgjenoppretting via e-post",
+          "status": "pending"
+        },
+        {
+          "task": "Flerspråkstøtte middleware",
+          "status": "done"
+        },
+        {
+          "task": "Språkfiler: lang/en/*",
+          "status": "done"
+        },
+        {
+          "task": "Språkfiler: lang/no/*",
+          "status": "done"
+        },
+        {
+          "task": "Språkvalg for bruker (lagres i DB)",
+          "status": "done"
+        }
+      ],
+      "before_start": [
+        "Les GUARDRAILS.md",
+        "Les AI-learned/feil.json",
+        "Les AI-learned/fungerer.json",
+        "Bekreft Fase 2 er FULLSTENDIG ferdig"
+      ],
+      "after_complete": [
+        "Oppdater AI-learned/fungerer.json",
+        "Oppdater AI-learned/feil.json",
+        "Oppdater plan.json status"
+      ],
+      "functions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Node-system",
+      "status": "completed",
+      "started": "2025-11-27",
+      "completed": "2025-11-27",
+      "tasks": [
+        {
+          "task": "Node model og controller",
+          "status": "done"
+        },
+        {
+          "task": "6 noder med live status",
+          "status": "done"
+        },
+        {
+          "task": "Node-tildeling ved login",
+          "status": "done"
+        },
+        {
+          "task": "Node timeout (frigjør inaktive)",
+          "status": "done"
+        },
+        {
+          "task": "Node-historikk logging",
+          "status": "done"
+        },
+        {
+          "task": "BotUser model (50+ personligheter)",
+          "status": "done"
+        },
+        {
+          "task": "Laravel Scheduler: Bot login/logout",
+          "status": "done"
+        },
+        {
+          "task": "Laravel Scheduler: Bot aktivitet basert på tid",
+          "status": "done"
+        },
+        {
+          "task": "Node-chat (meldinger mellom noder)",
+          "status": "done"
+        },
+        {
+          "task": "Page user funksjon",
+          "status": "done"
+        },
+        {
+          "task": "Who's Online visning",
+          "status": "done"
+        },
+        {
+          "task": "Last 10 Callers",
+          "status": "done"
+        },
+        {
+          "task": "Auto-reply system",
+          "status": "done"
+        }
+      ],
+      "before_start": [
+        "Les GUARDRAILS.md",
+        "Les AI-learned/feil.json",
+        "Les AI-learned/fungerer.json",
+        "Bekreft Fase 3 er FULLSTENDIG ferdig"
+      ],
+      "after_complete": [
+        "Oppdater AI-learned/fungerer.json",
+        "Oppdater AI-learned/feil.json",
+        "Oppdater plan.json status"
+      ],
+      "functions": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        48,
+        72,
+        74,
+        82,
+        93,
+        95,
+        96
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Meldingsbaser & Forum",
+      "status": "completed",
+      "started": "2025-11-27",
+      "completed": "2025-11-27",
+      "tasks": [
+        {
+          "task": "Category model (7 kategorier)",
+          "status": "done"
+        },
+        {
+          "task": "MessageThread model",
+          "status": "done"
+        },
+        {
+          "task": "Message model",
+          "status": "done"
+        },
+        {
+          "task": "Opprett ny tråd",
+          "status": "done"
+        },
+        {
+          "task": "Svar på tråd",
+          "status": "done"
+        },
+        {
+          "task": "Sitering av meldinger",
+          "status": "done"
+        },
+        {
+          "task": "Nye meldinger siden sist markering",
+          "status": "done"
+        },
+        {
+          "task": "Fulltekstsøk i meldinger",
+          "status": "done"
+        },
+        {
+          "task": "Private meldinger system",
+          "status": "done"
+        },
+        {
+          "task": "Meldingsstatistikk per base",
+          "status": "done"
+        },
+        {
+          "task": "Moderering: slett/rediger (SysOp)",
+          "status": "done"
+        },
+        {
+          "task": "AI Bot forum-poster (Scheduler)",
+          "status": "done"
+        },
+        {
+          "task": "Bot reply-chains",
+          "status": "done"
+        },
+        {
+          "task": "Sentiment-matching for bots",
+          "status": "done"
+        }
+      ],
+      "before_start": [
+        "Les GUARDRAILS.md",
+        "Les AI-learned/feil.json",
+        "Les AI-learned/fungerer.json",
+        "Bekreft Fase 4 er FULLSTENDIG ferdig"
+      ],
+      "after_complete": [
+        "Oppdater AI-learned/fungerer.json",
+        "Oppdater AI-learned/feil.json",
+        "Oppdater plan.json status"
+      ],
+      "functions": [
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        71,
+        73,
+        75,
+        76,
+        78
+      ]
+    },
+    {
+      "id": 6,
+      "name": "AI Historier",
+      "status": "completed",
+      "started": "2025-11-27",
+      "completed": "2025-11-27",
+      "tasks": [
+        {
+          "task": "Story model",
+          "status": "done"
+        },
+        {
+          "task": "StoryVote model",
+          "status": "done"
+        },
+        {
+          "task": "StoryComment model",
+          "status": "done"
+        },
+        {
+          "task": "AI-generering service (integrasjon)",
+          "status": "done"
+        },
+        {
+          "task": "Daglig historie per kategori (Scheduler)",
+          "status": "done"
+        },
+        {
+          "task": "Historie-arkiv med pagination",
+          "status": "done"
+        },
+        {
+          "task": "Stem på historier (up/down)",
+          "status": "done"
+        },
+        {
+          "task": "Kommentarer på historier",
+          "status": "done"
+        },
+        {
+          "task": "Favoritter system",
+          "status": "done"
+        },
+        {
+          "task": "Del historie (generer lenke)",
+          "status": "done"
+        },
+        {
+          "task": "AI-prompt konfigurasjon for SysOp",
+          "status": "done"
+        },
+        {
+          "task": "AI-genererte oneliners (Scheduler)",
+          "status": "done"
+        }
+      ],
+      "before_start": [
+        "Les GUARDRAILS.md",
+        "Les AI-learned/feil.json",
+        "Les AI-learned/fungerer.json",
+        "Bekreft Fase 5 er FULLSTENDIG ferdig"
+      ],
+      "after_complete": [
+        "Oppdater AI-learned/fungerer.json",
+        "Oppdater AI-learned/feil.json",
+        "Oppdater plan.json status"
+      ],
+      "functions": [
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        77
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Filområde",
+      "status": "pending",
+      "started": null,
+      "completed": null,
+      "tasks": [
+        {
+          "task": "FileCategory model",
+          "status": "pending"
+        },
+        {
+          "task": "File model",
+          "status": "pending"
+        },
+        {
+          "task": "Filopplasting med validering",
+          "status": "pending"
+        },
+        {
+          "task": "ClamAV integrasjon for virusscanning",
+          "status": "pending"
+        },
+        {
+          "task": "Godkjenningskø for opplastinger",
+          "status": "pending"
+        },
+        {
+          "task": "Nedlastingsteller",
+          "status": "pending"
+        },
+        {
+          "task": "Filbeskrivelser (FILE_ID.DIZ stil)",
+          "status": "pending"
+        },
+        {
+          "task": "Credits system",
+          "status": "pending"
+        },
+        {
+          "task": "File ratios (upload/download)",
+          "status": "pending"
+        },
+        {
+          "task": "New Files List siden sist",
+          "status": "pending"
+        },
+        {
+          "task": "File Request system",
+          "status": "pending"
+        },
+        {
+          "task": "Duplicate checker",
+          "status": "pending"
+        },
+        {
+          "task": "Top Uploaders liste",
+          "status": "pending"
+        }
+      ],
+      "before_start": [
+        "Les GUARDRAILS.md",
+        "Les AI-learned/feil.json",
+        "Les AI-learned/fungerer.json",
+        "Bekreft Fase 6 er FULLSTENDIG ferdig"
+      ],
+      "after_complete": [
+        "Oppdater AI-learned/fungerer.json",
+        "Oppdater AI-learned/feil.json",
+        "Oppdater plan.json status"
+      ],
+      "functions": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Door Games",
+      "status": "pending",
+      "started": null,
+      "completed": null,
+      "tasks": [
+        {
+          "task": "Game model",
+          "status": "pending"
+        },
+        {
+          "task": "GameScore model",
+          "status": "pending"
+        },
+        {
+          "task": "Achievement model",
+          "status": "pending"
+        },
+        {
+          "task": "Trivia Quiz (komplett spill)",
+          "status": "pending"
+        },
+        {
+          "task": "Hangman (komplett spill)",
+          "status": "pending"
+        },
+        {
+          "task": "Number Guessing (komplett spill)",
+          "status": "pending"
+        },
+        {
+          "task": "Trade Wars (komplett spill)",
+          "status": "pending"
+        },
+        {
+          "task": "Legend of the Red Dragon (komplett spill)",
+          "status": "pending"
+        },
+        {
+          "task": "Barren Realms Elite (komplett spill)",
+          "status": "pending"
+        },
+        {
+          "task": "Usurper (komplett spill)",
+          "status": "pending"
+        },
+        {
+          "task": "Global War (komplett spill)",
+          "status": "pending"
+        },
+        {
+          "task": "Poker (komplett spill)",
+          "status": "pending"
+        },
+        {
+          "task": "Blackjack (komplett spill)",
+          "status": "pending"
+        },
+        {
+          "task": "Daily Lottery",
+          "status": "pending"
+        },
+        {
+          "task": "Achievement system",
+          "status": "pending"
+        },
+        {
+          "task": "Global highscore-liste",
+          "status": "pending"
+        }
+      ],
+      "before_start": [
+        "Les GUARDRAILS.md",
+        "Les AI-learned/feil.json",
+        "Les AI-learned/fungerer.json",
+        "Bekreft Fase 7 er FULLSTENDIG ferdig"
+      ],
+      "after_complete": [
+        "Oppdater AI-learned/fungerer.json",
+        "Oppdater AI-learned/feil.json",
+        "Oppdater plan.json status"
+      ],
+      "functions": [
+        36,
+        37,
+        38,
+        39,
+        40,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Terminal Frontend",
+      "status": "pending",
+      "started": null,
+      "completed": null,
+      "tasks": [
+        {
+          "task": "BBS Terminal view (blade)",
+          "status": "pending"
+        },
+        {
+          "task": "ANSI-farger CSS",
+          "status": "pending"
+        },
+        {
+          "task": "Typing-effekt for output",
+          "status": "pending"
+        },
+        {
+          "task": "Connection speed simulering",
+          "status": "pending"
+        },
+        {
+          "task": "Speed: 2400 baud",
+          "status": "pending"
+        },
+        {
+          "task": "Speed: 9600 baud",
+          "status": "pending"
+        },
+        {
+          "task": "Speed: 14400 baud",
+          "status": "pending"
+        },
+        {
+          "task": "Speed: 28800 baud",
+          "status": "pending"
+        },
+        {
+          "task": "Speed: 56K modem",
+          "status": "pending"
+        },
+        {
+          "task": "Speed: Sci-Fi Speed (instant)",
+          "status": "pending"
+        },
+        {
+          "task": "Hotkeys navigasjon",
+          "status": "pending"
+        },
+        {
+          "task": "Pagination (More? Y/n/c)",
+          "status": "pending"
+        },
+        {
+          "task": "Sound effects (modem lyder)",
+          "status": "pending"
+        },
+        {
+          "task": "Transfer protocol visning (simulert)",
+          "status": "pending"
+        },
+        {
+          "task": "API endpoints for terminal",
+          "status": "pending"
+        }
+      ],
+      "before_start": [
+        "Les GUARDRAILS.md",
+        "Les AI-learned/feil.json",
+        "Les AI-learned/fungerer.json",
+        "Bekreft Fase 8 er FULLSTENDIG ferdig"
+      ],
+      "after_complete": [
+        "Oppdater AI-learned/fungerer.json",
+        "Oppdater AI-learned/feil.json",
+        "Oppdater plan.json status"
+      ],
+      "functions": [
+        52,
+        53,
+        54,
+        55,
+        57,
+        132,
+        134
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Sosiale & Nostalgi",
+      "status": "pending",
+      "started": null,
+      "completed": null,
+      "tasks": [
+        {
+          "task": "ANSI Art Gallery",
+          "status": "pending"
+        },
+        {
+          "task": "Oneliners system",
+          "status": "pending"
+        },
+        {
+          "task": "Voting Booth (polls)",
+          "status": "pending"
+        },
+        {
+          "task": "BBS-liste (andre BBSer)",
+          "status": "pending"
+        },
+        {
+          "task": "Bulletin Board (SysOp announcements)",
+          "status": "pending"
+        },
+        {
+          "task": "Logoff Quote",
+          "status": "pending"
+        },
+        {
+          "task": "ANSI Logon Screens",
+          "status": "pending"
+        },
+        {
+          "task": "System Uptime visning",
+          "status": "pending"
+        },
+        {
+          "task": "Time Bank",
+          "status": "pending"
+        },
+        {
+          "task": "Daily Time Limit",
+          "status": "pending"
+        },
+        {
+          "task": "User Clubs (grupper)",
+          "status": "pending"
+        },
+        {
+          "task": "Birthday List",
+          "status": "pending"
+        },
+        {
+          "task": "User Awards (månedlig)",
+          "status": "pending"
+        },
+        {
+          "task": "Graffiti Wall (ASCII)",
+          "status": "pending"
+        },
+        {
+          "task": "Warez Section (ACCESS DENIED)",
+          "status": "pending"
+        },
+        {
+          "task": "Door Game Emulator",
+          "status": "pending"
+        },
+        {
+          "task": "BBS Documentary Links",
+          "status": "pending"
+        }
+      ],
+      "before_start": [
+        "Les GUARDRAILS.md",
+        "Les AI-learned/feil.json",
+        "Les AI-learned/fungerer.json",
+        "Bekreft Fase 9 er FULLSTENDIG ferdig"
+      ],
+      "after_complete": [
+        "Oppdater AI-learned/fungerer.json",
+        "Oppdater AI-learned/feil.json",
+        "Oppdater plan.json status"
+      ],
+      "functions": [
+        46,
+        47,
+        49,
+        50,
+        51,
+        79,
+        80,
+        81,
+        83,
+        84,
+        85,
+        116,
+        118,
+        119,
+        121,
+        123,
+        124,
+        125
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Statistikk & Admin",
+      "status": "pending",
+      "started": null,
+      "completed": null,
+      "tasks": [
+        {
+          "task": "Caller log",
+          "status": "pending"
+        },
+        {
+          "task": "Top 10 brukere",
+          "status": "pending"
+        },
+        {
+          "task": "Systemstatistikk",
+          "status": "pending"
+        },
+        {
+          "task": "Daglig/ukentlig rapport",
+          "status": "pending"
+        },
+        {
+          "task": "SysOp dashboard",
+          "status": "pending"
+        },
+        {
+          "task": "Brukeradministrasjon",
+          "status": "pending"
+        },
+        {
+          "task": "Systemkonfigurasjon",
+          "status": "pending"
+        },
+        {
+          "task": "Backup-funksjon",
+          "status": "pending"
+        },
+        {
+          "task": "Maintenance mode",
+          "status": "pending"
+        },
+        {
+          "task": "User Graph (ASCII)",
+          "status": "pending"
+        },
+        {
+          "task": "Peak Hours statistikk",
+          "status": "pending"
+        },
+        {
+          "task": "Message Volume stats",
+          "status": "pending"
+        },
+        {
+          "task": "User Rankings",
+          "status": "pending"
+        },
+        {
+          "task": "Yearly Statistics",
+          "status": "pending"
+        },
+        {
+          "task": "IP Logging",
+          "status": "pending"
+        },
+        {
+          "task": "E-post integrasjon",
+          "status": "pending"
+        },
+        {
+          "task": "RSS feed",
+          "status": "pending"
+        }
+      ],
+      "before_start": [
+        "Les GUARDRAILS.md",
+        "Les AI-learned/feil.json",
+        "Les AI-learned/fungerer.json",
+        "Bekreft Fase 10 er FULLSTENDIG ferdig"
+      ],
+      "after_complete": [
+        "Oppdater AI-learned/fungerer.json",
+        "Oppdater AI-learned/feil.json",
+        "Oppdater plan.json status"
+      ],
+      "functions": [
+        41,
+        42,
+        43,
+        44,
+        45,
+        59,
+        60,
+        61,
+        62,
+        65,
+        66,
+        108,
+        109,
+        110,
+        112,
+        113,
+        130
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Sikkerhet & Testing",
+      "status": "pending",
+      "started": null,
+      "completed": null,
+      "tasks": [
+        {
+          "task": "Rate limiting",
+          "status": "pending"
+        },
+        {
+          "task": "CSRF-beskyttelse verifisering",
+          "status": "pending"
+        },
+        {
+          "task": "Input sanitering gjennomgang",
+          "status": "pending"
+        },
+        {
+          "task": "XSS-testing",
+          "status": "pending"
+        },
+        {
+          "task": "SQL injection testing",
+          "status": "pending"
+        },
+        {
+          "task": "Full systemtest",
+          "status": "pending"
+        },
+        {
+          "task": "Ytelsesoptimalisering",
+          "status": "pending"
+        },
+        {
+          "task": "Cache implementering",
+          "status": "pending"
+        },
+        {
+          "task": "Error handling gjennomgang",
+          "status": "pending"
+        },
+        {
+          "task": "Dokumentasjon fullføring",
+          "status": "pending"
+        },
+        {
+          "task": "Produksjonsklargjøring",
+          "status": "pending"
+        }
+      ],
+      "before_start": [
+        "Les GUARDRAILS.md",
+        "Les AI-learned/feil.json",
+        "Les AI-learned/fungerer.json",
+        "Bekreft Fase 11 er FULLSTENDIG ferdig"
+      ],
+      "after_complete": [
+        "Oppdater AI-learned/fungerer.json",
+        "Oppdater AI-learned/feil.json",
+        "Final review av hele prosjektet"
+      ],
+      "functions": [
+        67,
+        68,
+        69
+      ]
+    }
+  ],
+  "function_map": {
+    "1": "Gjesteinnlogging",
+    "2": "Brukerregistrering",
+    "3": "Innlogging med sesjon",
+    "4": "Brukernivåer",
+    "5": "Brukerstatistikk",
+    "6": "Last seen",
+    "7": "Brukerprofiler",
+    "8": "Passordgjenoppretting",
+    "9": "6 parallelle noder",
+    "10": "Node-status sanntid",
+    "11": "Random node-aktivitet",
+    "12": "Node-chat",
+    "13": "Node-historikk",
+    "14": "Automatisk node-tildeling",
+    "15": "Node timeout",
+    "16": "7 kategorier",
+    "17": "Tråd-baserte diskusjoner",
+    "18": "Nye meldinger markering",
+    "19": "Sitering",
+    "20": "Meldingssøk",
+    "21": "Private meldinger",
+    "22": "Meldingsstatistikk",
+    "23": "Moderering",
+    "24": "Daglig AI-historie",
+    "25": "Historie-arkiv",
+    "26": "Stem på historier",
+    "27": "Kommentarer",
+    "28": "Favoritter",
+    "29": "Del historie",
+    "30": "AI-prompt konfig",
+    "31": "Filbibliotek",
+    "32": "Filopplasting",
+    "33": "Nedlastingsteller",
+    "34": "Filbeskrivelser",
+    "35": "ClamAV virussjekk",
+    "36": "Dørvakt-spill",
+    "37": "Trivia Quiz",
+    "38": "Hangman",
+    "39": "Number guessing",
+    "40": "Global highscore",
+    "41": "Caller log",
+    "42": "Top 10 brukere",
+    "43": "Systemstatistikk",
+    "44": "Daglig rapport",
+    "45": "SysOp dashboard",
+    "46": "ANSI Art Gallery",
+    "47": "Oneliners",
+    "48": "Who's Online",
+    "49": "Voting Booth",
+    "50": "BBS-liste",
+    "51": "Callback verification",
+    "52": "BBS-output typing",
+    "53": "ANSI-farger",
+    "54": "Hotkeys",
+    "55": "Pagination",
+    "57": "Sound effects",
+    "59": "Brukeradministrasjon",
+    "60": "Systemkonfig",
+    "61": "Backup",
+    "62": "Maintenance mode",
+    "65": "E-post integrasjon",
+    "66": "RSS feed",
+    "67": "Rate limiting",
+    "68": "CSRF",
+    "69": "Input sanitering",
+    "71": "AI Forum Bot",
+    "72": "Bot-brukerpool",
+    "73": "Bot reply-chains",
+    "74": "Tidsbasert bot-aktivitet",
+    "75": "Bot-personligheter",
+    "76": "Sentiment-matching",
+    "77": "AI-genererte oneliners",
+    "78": "Fake flame wars",
+    "79": "Bulletin Board",
+    "80": "Logoff Quote",
+    "81": "ANSI Logon Screen",
+    "82": "Last 10 Callers",
+    "83": "System Uptime",
+    "84": "Time Bank",
+    "85": "Daily Time Limit",
+    "87": "File Ratios",
+    "88": "Credits System",
+    "89": "New Files List",
+    "90": "File Request",
+    "91": "Duplicate Checker",
+    "92": "Top Uploaders",
+    "93": "Multi-node Chat",
+    "95": "SysOp Page",
+    "96": "Auto-reply",
+    "100": "Trade Wars",
+    "101": "Legend of the Red Dragon",
+    "102": "Barren Realms Elite",
+    "103": "Usurper",
+    "104": "Global War",
+    "105": "Poker/Blackjack",
+    "106": "Daily Lottery",
+    "107": "Achievement System",
+    "108": "User Graph",
+    "109": "Peak Hours",
+    "110": "Message Volume",
+    "112": "User Rankings",
+    "113": "Yearly Statistics",
+    "116": "Warez Section",
+    "118": "Door Game Emulator",
+    "119": "BBS Documentary Links",
+    "121": "User Clubs",
+    "123": "Birthday List",
+    "124": "User Awards",
+    "125": "Graffiti Wall",
+    "130": "IP Logging",
+    "132": "Transfer Protocols",
+    "134": "Connection Speed (inkl Sci-Fi)"
+  }
+}

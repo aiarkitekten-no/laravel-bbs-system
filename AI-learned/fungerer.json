@@ -1,0 +1,171 @@
+{
+  "_meta": {
+    "description": "Bevist fungerende løsninger - GJENBRUK DISSE",
+    "updated": "2025-11-27 12:15",
+    "version": 4
+  },
+  "solutions": [
+    {
+      "id": 1,
+      "date": "2025-11-27",
+      "phase": 0,
+      "what": "Opprettelse av AI-learned mappestruktur",
+      "how": "Bruk create_file for hver JSON-fil med _meta objekt",
+      "result": "Alle 8 filer opprettet korrekt",
+      "reusable": true
+    },
+    {
+      "id": 2,
+      "date": "2025-11-27",
+      "phase": 0,
+      "what": "GUARDRAILS.md format",
+      "how": "Markdown med tabeller for klare regler",
+      "result": "Lett lesbart og strukturert",
+      "reusable": true
+    },
+    {
+      "id": 3,
+      "date": "2025-11-27",
+      "phase": 1,
+      "what": "Laravel 10.x installasjon på Plesk",
+      "how": "composer create-project laravel/laravel:^10.0 httpdocs --prefer-dist",
+      "result": "Laravel 10.49.1 installert vellykket",
+      "reusable": true
+    },
+    {
+      "id": 4,
+      "date": "2025-11-27",
+      "phase": 1,
+      "what": "Database-tilkobling MariaDB",
+      "how": "Bruk DB_CONNECTION=mysql (ikke mariadb) i .env",
+      "result": "Tilkobling fungerer med mysql driver",
+      "reusable": true
+    },
+    {
+      "id": 5,
+      "date": "2025-11-27",
+      "phase": 2,
+      "what": "Migrasjoner med foreign keys",
+      "how": "Opprett tabeller i riktig rekkefølge, bruk nullOnDelete() for nullable FKs",
+      "result": "39 migrasjoner kjørt vellykket",
+      "reusable": true
+    },
+    {
+      "id": 6,
+      "date": "2025-11-27",
+      "phase": 2,
+      "what": "Seeding med Hash::make for passord",
+      "how": "Bruk Illuminate\\Support\\Facades\\Hash::make() for passord",
+      "result": "SuperUser og 50 bots opprettet korrekt",
+      "reusable": true
+    },
+    {
+      "id": 7,
+      "date": "2025-11-27",
+      "phase": 3,
+      "what": "User model med konstanter for levels",
+      "how": "Definer LEVEL_* konstanter og LEVELS array i User model, bruk hasMinimumLevel() for sjekk",
+      "result": "Fungerer med middleware level:SYSOP etc",
+      "reusable": true
+    },
+    {
+      "id": 8,
+      "date": "2025-11-27",
+      "phase": 3,
+      "what": "API autentisering med Sanctum",
+      "how": "Bruk createToken('name')->plainTextToken, middleware auth:sanctum",
+      "result": "Token-basert auth fungerer",
+      "reusable": true
+    },
+    {
+      "id": 9,
+      "date": "2025-11-27",
+      "phase": 3,
+      "what": "Språkfiler i lang/ mappe",
+      "how": "Opprett lang/en/ og lang/no/ med PHP filer som returnerer arrays",
+      "result": "__('auth.logged_in') fungerer",
+      "reusable": true
+    },
+    {
+      "id": 10,
+      "date": "2025-11-27",
+      "phase": 3,
+      "what": "Middleware registrering i Kernel.php",
+      "how": "Legg til i $middlewareAliases array med alias => class",
+      "result": "Middleware 'level', 'locale', 'activity', 'time.check' fungerer",
+      "reusable": true
+    },
+    {
+      "id": 11,
+      "date": "2025-11-27",
+      "phase": 4,
+      "what": "Node-tildeling ved login",
+      "how": "Node::getFirstAvailable() returnerer første ledige node, assignUser() kobler bruker",
+      "result": "Brukere får tildelt node automatisk",
+      "reusable": true
+    },
+    {
+      "id": 12,
+      "date": "2025-11-27",
+      "phase": 4,
+      "what": "Bot-simulering med Scheduler",
+      "how": "SimulateBotActivity command kjøres everyMinute(), justerer aktivitet basert på klokkeslett",
+      "result": "Bots logger inn/ut basert på tid, oppdaterer aktivitet",
+      "reusable": true
+    },
+    {
+      "id": 13,
+      "date": "2025-11-27",
+      "phase": 4,
+      "what": "NodeChatMessage for node-chat",
+      "how": "Støtter broadcast (to_node_id=null) og direkte meldinger, samt pages (is_page=true)",
+      "result": "Chat mellom noder fungerer",
+      "reusable": true
+    },
+    {
+      "id": 14,
+      "date": "2025-11-27",
+      "phase": 5,
+      "what": "Locale-aware Model accessors",
+      "how": "Bruk getTitleAttribute() med app()->getLocale() for å returnere riktig språk",
+      "result": "Category, Story modeller viser riktig språk automatisk",
+      "reusable": true
+    },
+    {
+      "id": 15,
+      "date": "2025-11-27",
+      "phase": 5,
+      "what": "MessageThread med soft deletes og counters",
+      "how": "Bruk SoftDeletes trait, updateLastMessage() for å holde reply_count og last_message_at synkronisert",
+      "result": "Tråd-statistikk oppdateres automatisk ved nye meldinger",
+      "reusable": true
+    },
+    {
+      "id": 16,
+      "date": "2025-11-27",
+      "phase": 6,
+      "what": "Story voting med recalculate",
+      "how": "vote() metode håndterer toggle (samme vote = fjern), change vote, og ny vote. recalculateVotes() for konsistens",
+      "result": "Stemming fungerer med upvote/downvote toggle",
+      "reusable": true
+    },
+    {
+      "id": 17,
+      "date": "2025-11-27",
+      "phase": 5,
+      "what": "PrivateMessage med soft delete per bruker",
+      "how": "sender_deleted og recipient_deleted kolonner tillater begge å 'slette' uten faktisk sletting",
+      "result": "PM vises kun for bruker som ikke har slettet",
+      "reusable": true
+    },
+    {
+      "id": 18,
+      "date": "2025-11-27",
+      "phase": 6,
+      "what": "Oneliner med auto-approve for staff",
+      "how": "postOneliner() sjekker user->isStaff() for automatisk godkjenning",
+      "result": "SYSOP/COSYSOP slipper moderering",
+      "reusable": true
+    }
+  ]
+}
