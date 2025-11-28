@@ -1773,16 +1773,17 @@
         print('');
         
         try {
-            const games = await api('/games');
-            currentGameList = games.data || [];
+            const response = await api('/games');
+            // API returns { success: true, games: [...] }
+            currentGameList = response.games || response.data || [];
             
             if (currentGameList.length === 0) {
                 print('|cNo games available at this time.|N');
             } else {
                 currentGameList.forEach((game, i) => {
-                    const typeIcon = game.type === 'daily' ? '|y[DAILY]|N ' : '';
-                    const status = game.available ? '' : '|r[LOCKED]|N ';
-                    print(`|Y${i + 1}|N. ${typeIcon}${status}${game.title}`);
+                    const typeIcon = game.type === 'DAILY' ? '|Y[DAILY]|N ' : 
+                                    game.type === 'DOOR' ? '|M[DOOR]|N ' : '';
+                    print(`|Y${i + 1}|N. ${typeIcon}|W${game.name}|N`);
                     print(`   |K${game.description || 'No description'}|N`);
                 });
             }
