@@ -834,14 +834,16 @@
         print('|K                    Press [SPACE] or [ESC] to skip                     |N');
         print('');
         
-        // AT Commands sequence
+        await Promise.race([sleep(800), skipPromise]);
+        
+        // AT Commands sequence - slow and deliberate like a real modem
         const atCommands = [
-            { cmd: 'ATZ', response: 'OK', delay: 400 },
-            { cmd: 'AT&F', response: 'OK', delay: 300 },
-            { cmd: 'ATE1V1', response: 'OK', delay: 250 },
-            { cmd: 'AT+MS=V34', response: 'OK', delay: 300 },
-            { cmd: 'ATX4', response: 'OK', delay: 200 },
-            { cmd: 'ATDT punktet.no', response: null, delay: 500 }
+            { cmd: 'ATZ', response: 'OK', delay: 800 },
+            { cmd: 'AT&F', response: 'OK', delay: 600 },
+            { cmd: 'ATE1V1', response: 'OK', delay: 500 },
+            { cmd: 'AT+MS=V34', response: 'OK', delay: 700 },
+            { cmd: 'ATX4', response: 'OK', delay: 400 },
+            { cmd: 'ATDT punktet.no', response: null, delay: 1000 }
         ];
         
         for (const at of atCommands) {
@@ -851,18 +853,20 @@
             if (skipped) break;
             if (at.response) {
                 print(`|G${at.response}|N`);
+                await Promise.race([sleep(300), skipPromise]);
             }
         }
         
         if (!skipped) {
             print('');
             print('|YDIALING...|N');
-            await Promise.race([sleep(400), skipPromise]);
+            await Promise.race([sleep(1500), skipPromise]);
         }
         
         // Play modem sound (the iconic screech!)
         if (!skipped) {
             playModemSound();
+            await Promise.race([sleep(500), skipPromise]);
         }
         
         if (!skipped) {
@@ -870,21 +874,22 @@
             print('|c  ┌─────────────────────────────────────────────────────────────────┐|N');
             print('|c  │|N                                                                 |c│|N');
             
-            // Carrier detect sequence
+            // Carrier detect sequence - the exciting part!
             const carrierStages = [
-                '|Y  │   RING... RING...                                               │|N',
-                '|Y  │   CARRIER DETECT                                                │|N',
-                '|c  │   ▒▒▒▒▒▒▒▒▒▒▒▒ Training sequence ▒▒▒▒▒▒▒▒▒▒▒▒                   │|N',
+                { text: '|Y  │   RING...                                                      │|N', delay: 1200 },
+                { text: '|Y  │   RING... RING...                                              │|N', delay: 1200 },
+                { text: '|G  │   CARRIER DETECT                                               │|N', delay: 800 },
+                { text: '|c  │   ▒▒▒▒▒▒▒▒▒▒▒▒ Training sequence ▒▒▒▒▒▒▒▒▒▒▒▒                   │|N', delay: 1500 },
             ];
             
             for (const stage of carrierStages) {
                 if (skipped) break;
-                print(stage);
-                await Promise.race([sleep(600), skipPromise]);
+                print(stage.text);
+                await Promise.race([sleep(stage.delay), skipPromise]);
             }
         }
         
-        // Handshake negotiation with animated characters
+        // Handshake negotiation with animated characters - longer animation
         if (!skipped) {
             const handshakeFrames = [
                 '░░▒▒▓▓██▓▓▒▒░░ V.34 Handshake ░░▒▒▓▓██▓▓▒▒░░',
@@ -893,9 +898,10 @@
                 '██▓▓▒▒░░░░▒▒▓▓ V.34 Handshake ██▓▓▒▒░░░░▒▒▓▓',
             ];
             
-            for (let i = 0; i < 8 && !skipped; i++) {
+            // 16 iterations for longer animation (~4 seconds)
+            for (let i = 0; i < 16 && !skipped; i++) {
                 print(`|M  │   ${handshakeFrames[i % handshakeFrames.length]}   │|N`, { newline: false });
-                await Promise.race([sleep(150), skipPromise]);
+                await Promise.race([sleep(250), skipPromise]);
                 if (!skipped) {
                     // Clear line and move up
                     print('\r                                                                              \r', { newline: false });
@@ -904,13 +910,14 @@
             
             if (!skipped) {
                 print('|G  │   ████████████████ CONNECTED ████████████████                  │|N');
+                await Promise.race([sleep(600), skipPromise]);
             }
         }
         
         // Protocol negotiation
         if (!skipped) {
             print('|c  │|N                                                                 |c│|N');
-            await Promise.race([sleep(300), skipPromise]);
+            await Promise.race([sleep(500), skipPromise]);
             
             const protocols = [
                 'Error correction: V.42bis',
@@ -921,7 +928,7 @@
             for (const proto of protocols) {
                 if (skipped) break;
                 print(`|c  │   |K${proto.padEnd(55)}|c│|N`);
-                await Promise.race([sleep(200), skipPromise]);
+                await Promise.race([sleep(400), skipPromise]);
             }
         }
         
@@ -929,6 +936,7 @@
             print('|c  │|N                                                                 |c│|N');
             print('|c  └─────────────────────────────────────────────────────────────────┘|N');
             print('');
+            await Promise.race([sleep(500), skipPromise]);
             
             // Final connect speed
             const speedNames = {
@@ -942,7 +950,7 @@
             
             const speed = speedNames[state.baudRate] || '56000';
             print(`|GCONNECT ${speed}/ARQ/V34/LAPM/V42BIS|N`);
-            await Promise.race([sleep(400), skipPromise]);
+            await Promise.race([sleep(800), skipPromise]);
         }
         
         // Clean up listener
