@@ -40,16 +40,15 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::create([
+        // Use secure factory method to set sensitive attributes
+        $user = User::createWithDefaults([
             'handle' => $request->handle,
             'email' => $request->email,
             'password' => $request->password,
             'name' => $request->name,
             'location' => $request->location,
             'locale' => $request->locale ?? 'en',
-            'level' => User::LEVEL_USER,
-            'credits' => 100,
-        ]);
+        ], User::LEVEL_USER, 100);
 
         // Log the registration
         ActivityLog::log($user, 'register', __('activity.user_registered'));

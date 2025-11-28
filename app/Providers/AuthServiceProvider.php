@@ -2,7 +2,18 @@
 
 namespace App\Providers;
 
-// use Illuminate\Support\Facades\Gate;
+use App\Models\Message;
+use App\Models\StoryComment;
+use App\Models\PrivateMessage;
+use App\Models\Oneliner;
+use App\Models\File;
+use App\Models\GraffitiWall;
+use App\Policies\MessagePolicy;
+use App\Policies\StoryCommentPolicy;
+use App\Policies\PrivateMessagePolicy;
+use App\Policies\OnelinerPolicy;
+use App\Policies\FilePolicy;
+use App\Policies\GraffitiWallPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -13,7 +24,12 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        //
+        Message::class => MessagePolicy::class,
+        StoryComment::class => StoryCommentPolicy::class,
+        PrivateMessage::class => PrivateMessagePolicy::class,
+        Oneliner::class => OnelinerPolicy::class,
+        File::class => FilePolicy::class,
+        GraffitiWall::class => GraffitiWallPolicy::class,
     ];
 
     /**
@@ -21,6 +37,6 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        $this->registerPolicies();
     }
 }

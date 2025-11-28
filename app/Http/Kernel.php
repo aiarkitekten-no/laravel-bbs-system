@@ -74,5 +74,6 @@ class Kernel extends HttpKernel
         'rate.limit' => \App\Http\Middleware\ApiRateLimiter::class,
         'sanitize' => \App\Http\Middleware\SanitizeInput::class,
         'security.headers' => \App\Http\Middleware\SecurityHeaders::class,
+        'login.throttle' => \App\Http\Middleware\LoginThrottle::class,
     ];
 }

@@ -950,22 +950,47 @@
 
     async function readThread(threadId) {
         try {
-            const result = await api(`/threads/${threadId}`);
-            const thread = result.data;
+            // Get thread info and messages in one API call
+            const result = await api(`/threads/${threadId}/messages`);
+            const thread = result.thread || {};
+            const messages = result.messages || result.data || [];
 
             clearScreen();
-            print(`|Y═══ ${thread.title} ═══|N`);
-            print(`|cBy: |W${thread.author?.handle || 'Unknown'}|c on ${thread.created_at}|N`);
+            print(`|Y═══ ${thread.subject || 'Thread'} ═══|N`);
+            if (thread.view_count !== undefined) {
+                print(`|c${thread.view_count} views, ${thread.reply_count || messages.length} replies|N`);
+            }
             print('|B────────────────────────────────────────────────────────────────|N');
             print('');
 
             // Show messages
-            const messages = await api(`/threads/${threadId}/messages`);
-            messages.data.forEach((msg, i) => {
-                print(`|Y#${i + 1}|N |cFrom:|N ${msg.author?.handle || 'Unknown'} |c@|N ${msg.created_at}`);
-                print(msg.content);
-                print('|B────────────────────────────────────────────────────────────────|N');
-            });
+            if (messages.length === 0) {
+                print('|cNo messages in this thread.|N');
+            } else {
+                messages.forEach((msg, i) => {
+                    const author = msg.author?.handle || msg.user?.handle || 'Unknown';
+                    const content = msg.body || msg.content || '';
+                    
+                    if (i === 0) {
+                        // First message is the original post
+                        print(`|G[ORIGINAL POST]|N`);
+                        print(`|cFrom:|N |W${author}|N |c@|N ${msg.created_at}`);
+                        print('');
+                        print(content);
+                        print('');
+                        print('|B═══════════════════════════════════════════════════════════════════|N');
+                        if (messages.length > 1) {
+                            print('|c                         REPLIES                                  |N');
+                            print('|B═══════════════════════════════════════════════════════════════════|N');
+                        }
+                    } else {
+                        // Replies
+                        print(`|Y#${i}|N |cFrom:|N ${author} |c@|N ${msg.created_at}`);
+                        print(content);
+                        print('|B────────────────────────────────────────────────────────────────|N');
+                    }
+                });
+            }
 
             print('');
             print('|Y[R]|N Reply  |Y[Q]|N Back');
@@ -1002,8 +1027,8 @@
 
         try {
             setStatus('Posting reply...');
-            await api(`/threads/${currentThreadId}/messages`, 'POST', {
-                content: content.trim()
+            await api(`/threads/${currentThreadId}/reply`, 'POST', {
+                body: content.trim()
             });
             print('|G✓ Reply posted!|N');
             await readThread(currentThreadId);
@@ -1018,20 +1043,23 @@
         try {
             currentCategoryId = num;
             state.categoryThreads = [];
-            const threads = await api(`/categories/${num}/threads`);
+            const result = await api(`/categories/${num}/threads`);
+            const threadList = result.threads || result.data || [];
             
             clearScreen();
-            print(`|y=== ${threads.category?.name || 'Messages'} ===|N`);
+            print(`|y=== ${result.category?.name || 'Messages'} ===|N`);
             print('');
             
-            if (threads.data.length === 0) {
+            if (threadList.length === 0) {
                 print('|cNo threads in this area.|N');
             } else {
-                state.categoryThreads = threads.data;
-                threads.data.forEach((thread, i) => {
+                state.categoryThreads = threadList;
+                threadList.forEach((thread, i) => {
                     const status = thread.is_locked ? '|r[LOCKED]|N' : '';
                     const sticky = thread.is_sticky ? '|y[STICKY]|N' : '';
-                    print(`|Y${i + 1}|N. ${sticky}${status} ${thread.title} |c(${thread.message_count} msgs)|N`);
+                    const title = thread.subject || thread.title || 'Untitled';
+                    const count = thread.reply_count || thread.message_count || 0;
+                    print(`|Y${i + 1}|N. ${sticky}${status} ${title} |c(${count} msgs)|N`);
                 });
             }
             
@@ -1088,11 +1116,16 @@
         print('');
         
         try {
-            const categories = await api('/files/categories');
+            const result = await api('/files/categories');
+            const categories = result.categories || result.data || [];
             
-            categories.data.forEach((cat, i) => {
-                print(`|Y${i + 1}|N. ${cat.name} |c(${cat.file_count} files)|N`);
-            });
+            if (categories.length === 0) {
+                print('|cNo file areas available.|N');
+            } else {
+                categories.forEach((cat, i) => {
+                    print(`|Y${i + 1}|N. ${cat.name} |c(${cat.file_count} files)|N`);
+                });
+            }
             
             print('');
             print('|Y[#]|N Select area  |Y[U]|N Upload  |Y[Q]|N Quit');
@@ -1127,23 +1160,24 @@
     async function showFilesInCategory(catNum) {
         try {
             currentFileCategory = catNum;
-            const files = await api(`/files/categories/${catNum}`);
+            const result = await api(`/files/categories/${catNum}`);
+            const fileList = result.files || result.data || [];
             
             clearScreen();
-            print(`|y=== ${files.category?.name || 'Files'} ===|N`);
+            print(`|y=== ${result.category?.name || 'Files'} ===|N`);
             print('');
             
-            if (files.data.length === 0) {
+            if (fileList.length === 0) {
                 print('|cNo files in this area.|N');
             } else {
-                currentFileList = files.data;
+                currentFileList = fileList;
                 print('|c #   Filename                    Size       Downloads  Date|N');
                 print('|B ──  ────────────────────────────  ─────────  ─────────  ──────────|N');
-                files.data.forEach((file, i) => {
+                fileList.forEach((file, i) => {
                     const num = String(i + 1).padStart(2);
-                    const name = file.original_filename.substring(0, 28).padEnd(28);
+                    const name = (file.original_filename || file.filename || 'unknown').substring(0, 28).padEnd(28);
                     const size = formatFileSize(file.size).padStart(9);
-                    const dls = String(file.download_count).padStart(9);
+                    const dls = String(file.download_count || 0).padStart(9);
                     print(`|Y${num}|N  ${name}  ${size}  ${dls}  ${file.uploaded_at || ''}`);
                 });
             }
@@ -1242,18 +1276,20 @@
 
         try {
             setStatus('Searching...');
-            const result = await api(`/files/search?q=${encodeURIComponent(query)}`);
+            const result = await api(`/files/search?query=${encodeURIComponent(query)}`);
+            const fileList = result.results || result.data || [];
             
             print('');
             print(`|y=== Search Results for "${query}" ===|N`);
             print('');
             
-            if (result.data.length === 0) {
+            if (fileList.length === 0) {
                 print('|cNo files found.|N');
             } else {
-                currentFileList = result.data;
-                result.data.forEach((file, i) => {
-                    print(`|Y${i + 1}|N. ${file.original_filename} |c(${formatFileSize(file.size)})|N`);
+                currentFileList = fileList;
+                fileList.forEach((file, i) => {
+                    const filename = file.original_filename || file.filename || 'unknown';
+                    print(`|Y${i + 1}|N. ${filename} |c(${formatFileSize(file.size || 0)})|N`);
                 });
                 print('');
                 print('|Y[#]|N Download file');
@@ -1470,21 +1506,22 @@
         print('');
         
         try {
-            const stories = await api('/stories/today');
+            const result = await api('/stories/today');
+            const story = result.story || result.data || null;
             
-            if (stories.data) {
-                currentStory = stories.data;
+            if (story) {
+                currentStory = story;
                 print('|c┌─── Today\'s Story ───────────────────────────────────────────────┐|N');
                 print('|c│|N');
-                print(`|c│|Y  ${stories.data.title}|N`);
-                print(`|c│|K  Category: ${stories.data.category || 'General'}  |N`);
-                print(`|c│|K  Rating: ${stories.data.average_rating || 'Not rated'}/5  Views: ${stories.data.view_count || 0}|N`);
+                print(`|c│|Y  ${story.title}|N`);
+                print(`|c│|K  Category: ${story.category?.name || story.category || 'General'}  |N`);
+                print(`|c│|K  Rating: ${story.average_rating || 'Not rated'}/5  Views: ${story.view_count || 0}|N`);
                 print('|c│|N');
                 print('|c└──────────────────────────────────────────────────────────────────┘|N');
                 print('');
                 
                 // Show full story
-                const lines = stories.data.content.split('\n');
+                const lines = story.content.split('\n');
                 lines.forEach(line => print(`  ${line}`));
             } else {
                 print('|cNo story available today.|N');
@@ -1496,7 +1533,12 @@
             print('|Y[A]|N Archive  |Y[T]|N Top Rated  |Y[V]|G Vote  |Y[C]|N Comments  |Y[Q]|N Quit');
             
         } catch (error) {
-            print(`|rError: ${error.message}|N`);
+            // 404 means no story today - that's OK
+            if (error.message.includes('404') || error.message.includes('no story')) {
+                print('|cNo story available today.|N');
+            } else {
+                print(`|rError: ${error.message}|N`);
+            }
         }
         
         setPrompt('Stories');
@@ -1522,8 +1564,8 @@
 
     async function showStoryArchive() {
         try {
-            const archive = await api('/stories');
-            currentStoryList = archive.data || [];
+            const result = await api('/stories');
+            currentStoryList = result.stories || result.data || [];
 
             clearScreen();
             print('|y=== STORY ARCHIVE ===|N');
@@ -1538,7 +1580,8 @@
                     const num = String(i + 1).padStart(2);
                     const title = story.title.substring(0, 43).padEnd(43);
                     const rating = story.average_rating ? String(story.average_rating.toFixed(1)).padStart(4) + '/5' : '  N/A';
-                    print(`|Y${num}|N  ${title}  ${rating}  ${story.category || 'General'}`);
+                    const categoryName = story.category?.name || story.category || 'General';
+                    print(`|Y${num}|N  ${title}  ${rating}  ${categoryName}`);
                 });
             }
 
@@ -1669,17 +1712,18 @@
 
         try {
             const result = await api(`/stories/${currentStory.id}/comments`);
+            const commentList = result.comments || result.data || [];
             
             print('');
             print(`|y=== Comments on "${currentStory.title}" ===|N`);
             print('');
 
-            if (!result.data || result.data.length === 0) {
+            if (commentList.length === 0) {
                 print('|cNo comments yet. Be the first!|N');
             } else {
-                result.data.forEach(comment => {
+                commentList.forEach(comment => {
                     print(`|Y${comment.user?.handle || 'Anonymous'}|N |K(${comment.created_at})|N`);
-                    print(`  ${comment.content}`);
+                    print(`  ${comment.body || comment.content}`);
                     print('');
                 });
             }
@@ -2176,14 +2220,15 @@
 
     async function showOneliners() {
         try {
-            const oneliners = await api('/oneliners');
+            const result = await api('/oneliners');
+            const olList = result.oneliners || result.data || [];
             
             clearScreen();
             print('|B▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|W ONELINERS |B▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|N');
             print('');
             
-            if (oneliners.data && oneliners.data.length > 0) {
-                oneliners.data.slice(0, 15).forEach(ol => {
+            if (olList.length > 0) {
+                olList.slice(0, 15).forEach(ol => {
                     print(`|c${(ol.user?.handle || 'Anonymous').padEnd(12)}|K>|N ${ol.content}`);
                 });
             } else {
@@ -2237,12 +2282,12 @@
         try {
             const unread = await api('/pm/unread-count');
             const inbox = await api('/pm/inbox');
-            currentPMList = inbox.data || [];
+            currentPMList = inbox.messages || inbox.data || [];
             
             clearScreen();
             print('|B▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|W PRIVATE MESSAGES |B▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|N');
             print('');
-            print(`|c Unread: |R${unread.count}|c messages|N`);
+            print(`|c Unread: |R${unread.count || 0}|c messages|N`);
             print('');
             
             if (currentPMList.length === 0) {
@@ -2405,16 +2450,17 @@
 
     async function showSentPMs() {
         try {
-            const sent = await api('/pm/sent');
+            const result = await api('/pm/sent');
+            const msgList = result.messages || result.data || [];
             
             clearScreen();
             print('|y=== SENT MESSAGES ===|N');
             print('');
 
-            if (!sent.data || sent.data.length === 0) {
+            if (msgList.length === 0) {
                 print('|K No sent messages.|N');
             } else {
-                sent.data.slice(0, 15).forEach((msg, i) => {
+                msgList.slice(0, 15).forEach((msg, i) => {
                     const num = String(i + 1).padStart(2);
                     const to = (msg.recipient?.handle || 'Unknown').padEnd(16);
                     const subject = (msg.subject || '(no subject)').substring(0, 35);

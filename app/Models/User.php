@@ -30,33 +30,44 @@ class User extends Authenticatable
         self::LEVEL_SYSOP,
     ];
 
+    /**
+     * The attributes that are mass assignable.
+     * SECURITY: level, credits, is_bot removed to prevent privilege escalation
+     */
     protected $fillable = [
         'handle',
         'name',
         'email',
         'password',
-        'level',
         'locale',
         'bio',
         'location',
         'ascii_signature',
         'birthday',
+        'last_login_at',
+        'last_activity_at',
+        'last_ip',
+        'is_online',
+        'current_node_id',
+    ];
+
+    /**
+     * Attributes that require explicit setting (not mass assignable)
+     * Use dedicated methods: setLevel(), addCredits(), etc.
+     */
+    protected $guarded_sensitive = [
+        'level',
+        'credits',
+        'is_bot',
+        'bot_personality',
         'total_logins',
         'total_messages',
         'total_files_uploaded',
         'total_files_downloaded',
         'total_time_online',
-        'credits',
         'daily_time_used',
         'daily_time_limit',
         'time_bank',
-        'last_login_at',
-        'last_activity_at',
-        'last_ip',
-        'is_bot',
-        'bot_personality',
-        'is_online',
-        'current_node_id',
     ];
 
     protected $hidden = [
@@ -73,6 +84,56 @@ class User extends Authenticatable
         'is_bot' => 'boolean',
         'is_online' => 'boolean',
     ];
+
+    // ==========================================
+    // SECURE SETTERS FOR SENSITIVE ATTRIBUTES
+    // ==========================================
+
+    /**
+     * Safely set user level (not mass assignable)
+     */
+    public function setLevel(string $level): self
+    {
+        if (!in_array($level, self::LEVELS)) {
+            throw new \InvalidArgumentException("Invalid level: {$level}");
+        }
+        $this->level = $level;
+        return $this;
+    }
+
+    /**
+     * Safely set credits (not mass assignable)
+     */
+    public function setCredits(int $credits): self
+    {
+        $this->credits = max(0, $credits);
+        return $this;
+    }
+
+    /**
+     * Safely set bot status (not mass assignable)
+     */
+    public function setIsBot(bool $isBot, ?string $personality = null): self
+    {
+        $this->is_bot = $isBot;
+        if ($isBot && $personality) {
+            $this->bot_personality = $personality;
+        }
+        return $this;
+    }
+
+    /**
+     * Create a new user with initial sensitive values
+     */
+    public static function createWithDefaults(array $attributes, string $level = self::LEVEL_USER, int $credits = 100): self
+    {
+        $user = new self($attributes);
+        $user->level = $level;
+        $user->credits = $credits;
+        $user->daily_time_limit = config('punktet.default_time_limit', 60) * 60;
+        $user->save();
+        return $user;
+    }
 
     // ==========================================
     // RELATIONSHIPS
@@ -262,21 +323,31 @@ class User extends Authenticatable
 
     public function depositTimeToBank(int $seconds): bool
     {
-        if ($seconds > $this->getRemainingDailyTime()) {
-            return false;
-        }
-        $this->increment('time_bank', $seconds);
-        return true;
+        return \DB::transaction(function () use ($seconds) {
+            // Lock the row to prevent race conditions
+            $user = self::where('id', $this->id)->lockForUpdate()->first();
+            
+            if ($seconds > $user->getRemainingDailyTime()) {
+                return false;
+            }
+            $user->increment('time_bank', $seconds);
+            return true;
+        });
     }
 
     public function withdrawTimeFromBank(int $seconds): bool
     {
-        if ($seconds > $this->time_bank) {
-            return false;
-        }
-        $this->decrement('time_bank', $seconds);
-        $this->increment('daily_time_limit', $seconds);
-        return true;
+        return \DB::transaction(function () use ($seconds) {
+            // Lock the row to prevent race conditions
+            $user = self::where('id', $this->id)->lockForUpdate()->first();
+            
+            if ($seconds > $user->time_bank) {
+                return false;
+            }
+            $user->decrement('time_bank', $seconds);
+            $user->increment('daily_time_limit', $seconds);
+            return true;
+        });
     }
 
     // ==========================================
@@ -285,16 +356,26 @@ class User extends Authenticatable
 
     public function addCredits(int $amount): void
     {
-        $this->increment('credits', $amount);
+        \DB::transaction(function () use ($amount) {
+            self::where('id', $this->id)->lockForUpdate()->first();
+            $this->increment('credits', $amount);
+        });
     }
 
     public function deductCredits(int $amount): bool
     {
-        if ($amount > $this->credits) {
-            return false;
-        }
-        $this->decrement('credits', $amount);
-        return true;
+        return \DB::transaction(function () use ($amount) {
+            // Lock the row to prevent race conditions (double-spend)
+            $user = self::where('id', $this->id)->lockForUpdate()->first();
+            
+            if ($amount > $user->credits) {
+                return false;
+            }
+            $user->decrement('credits', $amount);
+            // Update local instance
+            $this->credits = $user->credits - $amount;
+            return true;
+        });
     }
 
     public function hasCredits(int $amount): bool

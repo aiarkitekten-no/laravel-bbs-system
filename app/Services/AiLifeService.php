@@ -831,24 +831,89 @@ Format: Returner KUN historien, ingen overskrift.";
             $user = User::where('handle', $username)->first();
 
             if (!$user) {
-                $user = User::create([
-                    'username' => Str::slug($username),
+                // Use createWithDefaults for proper secure attribute setting
+                $user = User::createWithDefaults([
                     'handle' => $username,
                     'email' => Str::slug($username) . '@ai.punktet.no',
                     'password' => bcrypt(Str::random(32)),
-                    'is_bot' => true,
-                    'level' => 'USER',
+                    'name' => $username,
                     'location' => $this->getRandomLocation(),
-                    'email_verified_at' => now(),
-                ]);
+                ], User::LEVEL_USER, 1000);
+                
+                // Set bot status using secure setter
+                $user->setIsBot(true, $username);
+                $user->save();
+                
                 $created[] = $username;
                 $this->log("Created AI user: {$username}");
             } elseif (!$user->is_bot) {
-                $user->update(['is_bot' => true]);
+                // Existing user needs bot flag
+                $user->setIsBot(true, $username);
+                $user->save();
             }
         }
 
+        // Ensure AI users are connected to nodes
+        $this->connectAiUsersToNodes();
+
         return $created;
+    }
+
+    /**
+     * Connect AI users to available nodes
+     */
+    protected function connectAiUsersToNodes(): void
+    {
+        $aiUsers = User::where('is_bot', true)->get();
+        $maxNodes = min($this->config['nodes']['count'] ?? 8, count($aiUsers));
+        
+        // Get available nodes (not used by real users)
+        $availableNodes = Node::where(function ($q) {
+                $q->whereNull('current_user_id')
+                  ->orWhereHas('currentUser', fn($sub) => $sub->where('is_bot', true));
+            })
+            ->orderBy('node_number')
+            ->limit($maxNodes)
+            ->get();
+
+        $usedUsers = [];
+        $activities = $this->config['personalities']['activities'] ?? [
+            'Reading messages', 'Browsing files', 'Playing games', 
+            'Checking polls', 'Viewing ANSI art', 'Chatting'
+        ];
+
+        foreach ($availableNodes as $node) {
+            // Skip if node already has this AI
+            if ($node->current_user_id && $node->currentUser?->is_bot) {
+                $usedUsers[] = $node->current_user_id;
+                continue;
+            }
+
+            // Find an unused AI user
+            $availableAiUsers = $aiUsers->filter(fn($u) => !in_array($u->id, $usedUsers));
+            if ($availableAiUsers->isEmpty()) {
+                break;
+            }
+
+            $aiUser = $availableAiUsers->random();
+            $usedUsers[] = $aiUser->id;
+
+            // Connect AI to node
+            $node->update([
+                'current_user_id' => $aiUser->id,
+                'current_activity' => $activities[array_rand($activities)],
+                'user_connected_at' => now(),
+                'status' => 'ONLINE',
+            ]);
+            
+            $aiUser->update([
+                'is_online' => true,
+                'current_node_id' => $node->id,
+                'last_activity_at' => now(),
+            ]);
+            
+            $this->log("Connected {$aiUser->handle} to node {$node->node_number}");
+        }
     }
 
     /**

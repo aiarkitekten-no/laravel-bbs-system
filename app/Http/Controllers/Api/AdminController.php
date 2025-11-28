@@ -226,6 +226,7 @@ class AdminController extends Controller
     public function userUpdate(Request $request, $userId)
     {
         $user = User::findOrFail($userId);
+        $adminUser = $request->user();
 
         $validated = $request->validate([
             'handle' => 'sometimes|string|max:30|unique:users,handle,' . $userId,
@@ -237,12 +238,43 @@ class AdminController extends Controller
             'download_limit_kb' => 'sometimes|integer|min:0',
         ]);
 
+        // SECURITY: Only SYSOP can promote to SYSOP or modify other SYSOPs
+        if (isset($validated['level'])) {
+            $newLevel = $validated['level'];
+            
+            // Prevent non-SYSOP from setting SYSOP level
+            if ($newLevel === User::LEVEL_SYSOP && !$adminUser->isSysop()) {
+                return response()->json([
+                    'error' => 'Only SysOp can promote users to SysOp level',
+                ], 403);
+            }
+            
+            // Prevent modifying another SYSOP's level (unless you're SYSOP)
+            if ($user->isSysop() && !$adminUser->isSysop()) {
+                return response()->json([
+                    'error' => 'Only SysOp can modify another SysOp',
+                ], 403);
+            }
+            
+            // Use secure setter instead of mass assignment
+            unset($validated['level']);
+            $user->setLevel($newLevel);
+        }
+
+        // SECURITY: Handle credits separately with secure setter
+        if (isset($validated['credits'])) {
+            $user->setCredits($validated['credits']);
+            unset($validated['credits']);
+        }
+
+        // Update remaining safe fields
         $user->update($validated);
+        $user->save();
 
         ActivityLog::create([
             'user_id' => auth()->id(),
             'action' => 'admin_user_update',
-            'details' => json_encode(['target_user' => $userId, 'changes' => $validated]),
+            'details' => json_encode(['target_user' => $userId, 'changes' => array_keys($validated)]),
             'ip_address' => $request->ip(),
         ]);
 

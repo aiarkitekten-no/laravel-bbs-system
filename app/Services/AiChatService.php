@@ -88,7 +88,10 @@ class AiChatService
     {
         // SAFETY CHECK: Block inappropriate content
         if ($this->containsForbiddenContent($message)) {
-            Log::warning("AI Chat: Blocked inappropriate message from {$fromUser->handle} to {$aiUser->handle}");
+            Log::warning("AI Chat: Blocked inappropriate message", [
+                'from_user_id' => $fromUser->id,
+                'to_ai_id' => $aiUser->id,
+            ]);
             return $this->redirectResponses[array_rand($this->redirectResponses)];
         }
 
@@ -294,7 +297,11 @@ Du chatter uformelt som på en BBS. Svar som en ekte BBS-bruker ville gjort.";
                         $response
                     );
                     
-                    Log::info("AI Chat: {$aiUser->handle} replied to {$fromUser->handle}: {$response}");
+                    // Log only metadata, not content (GDPR/privacy)
+                    Log::debug("AI Chat: Response sent", [
+                        'ai_id' => $aiUser->id,
+                        'to_user_id' => $fromUser->id,
+                    ]);
                 }
             }
         })->afterResponse();

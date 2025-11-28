@@ -81,15 +81,57 @@ class FileController extends Controller
     }
 
     /**
+     * Allowed file extensions for upload (security whitelist)
+     */
+    private const ALLOWED_EXTENSIONS = [
+        // Archives
+        'zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz', 'lha', 'lzh', 'arj',
+        // Documents
+        'txt', 'nfo', 'diz', 'doc', 'docx', 'pdf', 'rtf', 'odt',
+        // Images
+        'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'webp',
+        // Audio
+        'mp3', 'wav', 'ogg', 'flac', 'mod', 'xm', 's3m', 'it', 'sid',
+        // Video
+        'mp4', 'avi', 'mkv', 'webm',
+        // BBS specific
+        'ans', 'asc', 'diz', 'nfo',
+    ];
+
+    /**
+     * Blocked MIME types (security blacklist) 
+     */
+    private const BLOCKED_MIMES = [
+        'application/x-php',
+        'application/x-httpd-php',
+        'application/x-sh',
+        'application/x-csh',
+        'application/x-executable',
+        'application/x-msdownload',
+        'text/x-php',
+        'text/html',
+        'application/javascript',
+    ];
+
+    /**
      * Upload a file
      */
     public function upload(Request $request): JsonResponse
     {
+        $allowedExtensions = implode(',', self::ALLOWED_EXTENSIONS);
+        
         $validator = Validator::make($request->all(), [
             'category_id' => 'required|exists:file_categories,id',
-            'file' => 'required|file|max:102400', // 100MB max
+            'file' => [
+                'required',
+                'file',
+                'max:102400', // 100MB max
+                "mimes:{$allowedExtensions}",
+            ],
             'description' => 'nullable|string|max:2000',
-            'file_id_diz' => 'nullable|string|max:1000',
+            'file_id_diz' => 'nullable|string|max:1000|regex:/^[^<>]*$/', // No HTML tags
+        ], [
+            'file.mimes' => __('files.invalid_file_type'),
         ]);
 
         if ($validator->fails()) {
@@ -103,6 +145,19 @@ class FileController extends Controller
         $user = $request->user();
         $uploadedFile = $request->file('file');
         $originalName = $uploadedFile->getClientOriginalName();
+        
+        // Additional security check: verify MIME type isn't blocked
+        $mimeType = $uploadedFile->getMimeType();
+        if (in_array($mimeType, self::BLOCKED_MIMES)) {
+            return response()->json([
+                'success' => false,
+                'message' => __('files.dangerous_file_type'),
+            ], 422);
+        }
+        
+        // Security: sanitize filename
+        $originalName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
+        
         $md5Hash = md5_file($uploadedFile->getRealPath());
 
         // Check for duplicates

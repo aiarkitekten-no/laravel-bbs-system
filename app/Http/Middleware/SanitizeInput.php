@@ -54,27 +54,39 @@ class SanitizeInput
 
     /**
      * Sanitize a string value.
+     * 
+     * NOTE: We do NOT use htmlspecialchars here because:
+     * 1. Blade templates already escape output with {{ }}
+     * 2. Double-encoding breaks legitimate characters
+     * 3. JSON API responses don't need HTML encoding
+     * 
+     * We only remove dangerous patterns that could cause XSS.
      */
     protected function sanitizeString(string $value): string
     {
         // Trim whitespace
         $value = trim($value);
 
-        // Remove null bytes
+        // Remove null bytes (can bypass security filters)
         $value = str_replace(chr(0), '', $value);
 
-        // Convert special characters to HTML entities
-        // Note: We use ENT_QUOTES to handle both single and double quotes
-        $value = htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8', false);
-
-        // Remove potential JavaScript event handlers
-        $value = preg_replace('/on\w+\s*=/i', '', $value);
+        // Remove potential JavaScript event handlers (onerror=, onclick=, etc.)
+        $value = preg_replace('/\bon\w+\s*=/i', '', $value);
 
         // Remove javascript: protocol
         $value = preg_replace('/javascript\s*:/i', '', $value);
 
-        // Remove data: protocol (can be used for XSS)
-        $value = preg_replace('/data\s*:/i', '', $value);
+        // Remove vbscript: protocol (IE specific)
+        $value = preg_replace('/vbscript\s*:/i', '', $value);
+
+        // Remove data: protocol with dangerous MIME types
+        $value = preg_replace('/data\s*:\s*(text\/html|application\/javascript)/i', 'data:blocked', $value);
+
+        // Remove <script> tags entirely
+        $value = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $value);
+
+        // Remove style expressions (IE specific XSS)
+        $value = preg_replace('/expression\s*\(/i', '', $value);
 
         return $value;
     }

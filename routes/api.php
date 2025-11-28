@@ -28,9 +28,14 @@ use App\Http\Controllers\Api\HealthController;
 |
 */
 
-// Health check routes (no middleware)
+// Health check routes - basic ping is public, detailed requires auth
 Route::get('/health/ping', [HealthController::class, 'ping']);
 Route::get('/health/status', [HealthController::class, 'status']);
+
+// Detailed health info requires authentication (exposes system info)
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/health/detailed', [HealthController::class, 'detailed'])->middleware('level:COSYSOP');
+});
 
 // Apply locale middleware to all API routes
 Route::middleware(['locale'])->group(function () {
@@ -41,8 +46,8 @@ Route::middleware(['locale'])->group(function () {
     
     Route::prefix('auth')->group(function () {
         Route::post('/register', [AuthController::class, 'register']);
-        Route::post('/login', [AuthController::class, 'login']);
-        Route::post('/guest', [AuthController::class, 'guestLogin']);
+        Route::post('/login', [AuthController::class, 'login'])->middleware('login.throttle');
+        Route::post('/guest', [AuthController::class, 'guestLogin'])->middleware('login.throttle');
     });
 
     // Public node status

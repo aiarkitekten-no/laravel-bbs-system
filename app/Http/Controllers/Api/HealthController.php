@@ -64,6 +64,15 @@ class HealthController extends Controller
     }
 
     /**
+     * Detaljert systeminfo (kun for COSYSOP+)
+     * Alias for diagnostics for route consistency
+     */
+    public function detailed(): JsonResponse
+    {
+        return $this->diagnostics();
+    }
+
+    /**
      * Detaljert systeminfo (kun for SYSOP)
      */
     public function diagnostics(): JsonResponse

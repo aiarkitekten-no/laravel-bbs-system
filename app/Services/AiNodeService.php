@@ -39,16 +39,18 @@ class AiNodeService
             $user = User::where('handle', $username)->first();
 
             if (!$user) {
-                $user = User::create([
-                    'username' => Str::slug($username),
+                // Use createWithDefaults for proper secure attribute setting
+                $user = User::createWithDefaults([
                     'handle' => $username,
                     'email' => Str::slug($username) . '@ai.punktet.no',
                     'password' => bcrypt(Str::random(32)),
-                    'is_bot' => true,
-                    'level' => 'USER',
+                    'name' => $username,
                     'location' => $this->getRandomLocation(),
-                    'email_verified_at' => now(),
-                ]);
+                ], User::LEVEL_USER, 1000);
+                
+                // Set bot status using secure setter
+                $user->setIsBot(true, $username);
+                $user->save();
                 
                 $this->log("Created AI user: {$username}");
             }
