@@ -311,8 +311,11 @@ Route::middleware(['locale'])->group(function () {
 
         Route::prefix('games')->group(function () {
             Route::get('/my-achievements', [GameController::class, 'myAchievements']);
+            Route::get('/my-scores', [GameController::class, 'myScores']);
+            Route::get('/todays-scores', [GameController::class, 'todaysScores']);
+            Route::post('/lottery', [GameController::class, 'lottery']);
             Route::post('/{slug}/start', [GameController::class, 'start']);
-            Route::post('/{slug}/action', [GameController::class, 'action']);
+            Route::post('/{slug}/play', [GameController::class, 'play']);
             Route::get('/{slug}/state', [GameController::class, 'getState']);
         });
 

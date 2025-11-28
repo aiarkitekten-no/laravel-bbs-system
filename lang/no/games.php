@@ -160,7 +160,18 @@ return [
     
     // Errors
     'game_not_found' => 'Spill ikke funnet',
+    'not_found' => 'Spill ikke funnet',
     'game_not_active' => 'Dette spillet er ikke aktivt',
     'invalid_action' => 'Ugyldig spillhandling',
     'session_expired' => 'Spilløkt utløpt',
+    'validation_error' => 'Valideringsfeil',
+    'no_turns_remaining' => 'Ingen trekk igjen i dag',
+    'no_active_game' => 'Du har ikke en aktiv spilløkt',
+    'started' => 'Spillet har startet!',
+    
+    // Lottery
+    'lottery_unavailable' => 'Lotteriet er ikke tilgjengelig',
+    'lottery_already_played' => 'Du har allerede spilt lotteriet i dag',
+    'lottery_winner' => 'Gratulerer! Du vant :amount kreditter!',
+    'lottery_no_win' => 'Ingen gevinst denne gangen. Prøv igjen i morgen!',
 ];

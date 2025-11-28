@@ -57,4 +57,13 @@ abstract class BaseGameService
         $playerState = $this->getPlayerState($user);
         return $playerState->getState($key, $default);
     }
+
+    /**
+     * Get full current game state for display
+     */
+    public function getCurrentState(User $user): array
+    {
+        $playerState = $this->getPlayerState($user);
+        return $playerState->state ?? [];
+    }
 }

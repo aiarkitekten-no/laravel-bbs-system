@@ -160,7 +160,18 @@ return [
     
     // Errors
     'game_not_found' => 'Game not found',
+    'not_found' => 'Game not found',
     'game_not_active' => 'This game is not currently active',
     'invalid_action' => 'Invalid game action',
     'session_expired' => 'Game session expired',
+    'validation_error' => 'Validation error',
+    'no_turns_remaining' => 'No turns remaining today',
+    'no_active_game' => 'You do not have an active game session',
+    'started' => 'Game started!',
+    
+    // Lottery
+    'lottery_unavailable' => 'Lottery is not available',
+    'lottery_already_played' => 'You have already played the lottery today',
+    'lottery_winner' => 'Congratulations! You won :amount credits!',
+    'lottery_no_win' => 'No win this time. Try again tomorrow!',
 ];

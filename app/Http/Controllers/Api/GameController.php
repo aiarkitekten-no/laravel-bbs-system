@@ -55,8 +55,8 @@ class GameController extends Controller
         }
 
         $user = $request->user();
-        $playerState = $game->getPlayerState($user);
-        $userHighScore = $game->getUserHighScore($user);
+        $playerState = $user ? $game->getPlayerState($user) : null;
+        $userHighScore = $user ? $game->getUserHighScore($user) : null;
 
         return response()->json([
             'success' => true,
@@ -399,6 +399,41 @@ class GameController extends Controller
             'matched' => $matched,
             'prize' => $prize,
             'message' => $matched >= 3 ? __('games.lottery_winner', ['amount' => $prize]) : __('games.lottery_no_win'),
+        ]);
+    }
+
+    /**
+     * Get current game state for a player
+     */
+    public function getState(Request $request, string $slug): JsonResponse
+    {
+        $game = Game::findBySlug($slug);
+
+        if (!$game || !$game->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => __('games.not_found'),
+            ], 404);
+        }
+
+        $user = $request->user();
+        $playerState = $game->getPlayerState($user);
+
+        if (!$playerState) {
+            return response()->json([
+                'success' => false,
+                'message' => __('games.no_active_game'),
+            ], 404);
+        }
+
+        $gameService = GameServiceFactory::create($game);
+        $state = $gameService->getCurrentState($user);
+
+        return response()->json([
+            'success' => true,
+            'game' => $game->name,
+            'state' => $state,
+            'turns_remaining' => $playerState->getRemainingTurns(),
         ]);
     }
 }
