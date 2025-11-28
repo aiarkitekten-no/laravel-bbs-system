@@ -3926,26 +3926,38 @@
         setupInput();
         setupSettings();
         
-        // Show modem connection animation on first visit
-        const hasConnectedBefore = sessionStorage.getItem('punktet_connected');
-        if (!hasConnectedBefore) {
-            await showModemConnection();
-            sessionStorage.setItem('punktet_connected', 'true');
-        }
-        
-        // Check for existing session
+        // Check for existing session FIRST (before modem animation)
         if (state.token) {
             try {
+                setStatus('Reconnecting...');
                 const result = await api('/auth/me');
                 state.user = result.user;
+                state.node = result.node;
+                
+                // User is already logged in - skip modem animation!
+                print('');
+                print('|G═══════════════════════════════════════════════════════════════════════|N');
+                print('|G  Session restored - Welcome back, |W' + (state.user.handle || state.user.username) + '|G!|N');
+                print('|G═══════════════════════════════════════════════════════════════════════|N');
+                print('');
+                
                 updateUserDisplay();
+                setStatus('');
                 goToMainMenu();
                 return;
             } catch (e) {
                 // Token invalid, continue to login
                 state.token = null;
                 localStorage.removeItem('punktet_token');
+                setStatus('');
             }
+        }
+        
+        // Show modem connection animation only for new visitors
+        const hasConnectedBefore = localStorage.getItem('punktet_has_visited');
+        if (!hasConnectedBefore) {
+            await showModemConnection();
+            localStorage.setItem('punktet_has_visited', 'true');
         }
         
         // Show login screen
