@@ -21,7 +21,8 @@
         },
         frameDelay: 16,   // ~60fps
         maxHistory: 50,
-        linesPerPage: 23
+        linesPerPage: 23,
+        totalNodes: 6     // Total available nodes
     };
 
     const state = {
@@ -323,17 +324,134 @@
     }
 
     // =====================================================
-    // Sound Functions
+    // Sound Functions (with Web Audio API fallback)
     // =====================================================
+    
+    let audioContext = null;
+    
+    function getAudioContext() {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        return audioContext;
+    }
     
     function playSound(soundId) {
         if (!state.soundEnabled) return;
         
         const audio = elements[soundId];
-        if (audio) {
+        if (audio && audio.src && audio.duration > 0) {
             audio.currentTime = 0;
             audio.play().catch(() => {}); // Ignore autoplay restrictions
+        } else {
+            // Fallback to Web Audio API generated sounds
+            playGeneratedSound(soundId);
         }
+    }
+    
+    function playGeneratedSound(soundId) {
+        if (!state.soundEnabled) return;
+        
+        try {
+            const ctx = getAudioContext();
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            
+            switch (soundId) {
+                case 'keyClick':
+                    // Short click sound
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(800, ctx.currentTime);
+                    gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+                    oscillator.start(ctx.currentTime);
+                    oscillator.stop(ctx.currentTime + 0.05);
+                    break;
+                    
+                case 'bellSound':
+                    // Bell/beep sound
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(880, ctx.currentTime);
+                    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                    oscillator.start(ctx.currentTime);
+                    oscillator.stop(ctx.currentTime + 0.3);
+                    break;
+                    
+                case 'modemConnect':
+                    // Simulate modem handshake sounds
+                    playModemHandshake(ctx);
+                    break;
+                    
+                case 'transferStart':
+                    // ZMODEM start sound
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(1200, ctx.currentTime);
+                    oscillator.frequency.setValueAtTime(2400, ctx.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+                    oscillator.start(ctx.currentTime);
+                    oscillator.stop(ctx.currentTime + 0.2);
+                    break;
+                    
+                case 'transferComplete':
+                    // Success chime
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+                    oscillator.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
+                    oscillator.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2); // G5
+                    gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+                    oscillator.start(ctx.currentTime);
+                    oscillator.stop(ctx.currentTime + 0.4);
+                    break;
+            }
+        } catch (e) {
+            // Audio not supported
+        }
+    }
+    
+    function playModemHandshake(ctx) {
+        // Simulate classic modem negotiation sounds
+        const now = ctx.currentTime;
+        
+        // Dial tone simulation
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(ctx.destination);
+        
+        // US dial tone frequencies
+        osc1.frequency.value = 350;
+        osc2.frequency.value = 440;
+        osc1.type = 'sine';
+        osc2.type = 'sine';
+        
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.setValueAtTime(0, now + 0.5);
+        
+        // Carrier tones
+        gain.gain.setValueAtTime(0.15, now + 0.6);
+        osc1.frequency.setValueAtTime(1200, now + 0.6);
+        osc2.frequency.setValueAtTime(2400, now + 0.6);
+        
+        // Negotiation noise
+        gain.gain.setValueAtTime(0.08, now + 1.0);
+        osc1.frequency.setValueAtTime(1800, now + 1.0);
+        osc2.frequency.setValueAtTime(2100, now + 1.0);
+        
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 2.0);
+        
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 2.0);
+        osc2.stop(now + 2.0);
     }
 
     function playModemSound() {
@@ -346,6 +464,96 @@
 
     function playBell() {
         playSound('bellSound');
+    }
+    
+    function playTransferStart() {
+        playGeneratedSound('transferStart');
+    }
+    
+    function playTransferComplete() {
+        playGeneratedSound('transferComplete');
+    }
+
+    // =====================================================
+    // Transfer Protocol Simulation (ZMODEM style)
+    // =====================================================
+    
+    async function simulateZmodemTransfer(filename, fileSize, isUpload = false) {
+        const direction = isUpload ? 'Uploading' : 'Downloading';
+        const protocol = 'ZMODEM';
+        
+        playTransferStart();
+        
+        print('');
+        print(`|c╔═══════════════════════════════════════════════════════════════╗|N`);
+        print(`|c║|N  |W${protocol} File Transfer|N                                        |c║|N`);
+        print(`|c╠═══════════════════════════════════════════════════════════════╣|N`);
+        print(`|c║|N  File: |Y${filename.substring(0, 45).padEnd(45)}|N       |c║|N`);
+        print(`|c║|N  Size: |Y${formatFileSize(fileSize).padEnd(45)}|N       |c║|N`);
+        print(`|c║|N  ${direction}: |G[                                        ]|N  |c║|N`);
+        print(`|c╚═══════════════════════════════════════════════════════════════╝|N`);
+        
+        // Calculate transfer time based on baud rate
+        const effectiveBaud = state.baudRate || 56000;
+        const bytesPerSecond = effectiveBaud / 10; // Approximate
+        const totalTime = Math.max(1, Math.min(10, fileSize / bytesPerSecond));
+        const steps = 40;
+        const stepTime = (totalTime * 1000) / steps;
+        
+        for (let i = 1; i <= steps; i++) {
+            await sleep(stepTime);
+            
+            const progress = '█'.repeat(i) + '░'.repeat(steps - i);
+            const percent = Math.round((i / steps) * 100);
+            const transferred = Math.round((i / steps) * fileSize);
+            const cps = Math.round(transferred / (i * stepTime / 1000));
+            
+            // Update progress line (move cursor up and rewrite)
+            // Since we can't easily do cursor movement, we'll just print status
+            if (i === steps || i % 10 === 0) {
+                print(`|c  Progress: |G${percent}%|N  |c${formatFileSize(transferred)}|N / |c${formatFileSize(fileSize)}|N  |cCPS: ${cps}|N`);
+            }
+        }
+        
+        playTransferComplete();
+        
+        print('');
+        print(`|G✓ Transfer complete: ${filename}|N`);
+        print(`|c  Protocol: ${protocol}  |N|c Block size: 1024|N`);
+        print('');
+        
+        return true;
+    }
+    
+    // Alternative simpler progress display
+    async function showTransferProgress(filename, fileSize, downloadUrl) {
+        print('');
+        print(`|c┌─────────────────────────────────────────────────────────────────┐|N`);
+        print(`|c│|N |WZMODEM|N Transfer Protocol                                      |c│|N`);
+        print(`|c├─────────────────────────────────────────────────────────────────┤|N`);
+        print(`|c│|N File: |Y${filename.substring(0, 50).padEnd(50)}|N    |c│|N`);
+        print(`|c│|N Size: |Y${formatFileSize(fileSize).padEnd(50)}|N    |c│|N`);
+        print(`|c└─────────────────────────────────────────────────────────────────┘|N`);
+        
+        playTransferStart();
+        
+        // Simulate quick transfer animation
+        const frames = ['⣾', '⣽', '⣻', '⢿', '⡿', '⣟', '⣯', '⣷'];
+        for (let i = 0; i < 8; i++) {
+            print(`|c  ${frames[i]} Transferring...|N`, { newline: false });
+            await sleep(150);
+            // Clear line simulation
+            print('\r                           \r', { newline: false });
+        }
+        
+        playTransferComplete();
+        print('|G  ✓ Transfer initiated successfully!|N');
+        print('');
+        
+        // Actually open download
+        if (downloadUrl) {
+            window.open(downloadUrl, '_blank');
+        }
     }
 
     // =====================================================
@@ -1215,12 +1423,15 @@
 
         const file = currentFileList[idx];
         try {
-            print(`|cPreparing download: |W${file.original_filename}|N`);
             const result = await api(`/files/${file.id}/download`);
             
             if (result.download_url) {
-                print('|G✓ Download starting...|N');
-                window.open(result.download_url, '_blank');
+                // Show ZMODEM-style transfer protocol display
+                await showTransferProgress(
+                    file.original_filename || file.filename,
+                    file.size || file.file_size || 0,
+                    result.download_url
+                );
             } else {
                 print('|rDownload not available.|N');
             }
@@ -2761,6 +2972,69 @@
     }
 
     // =====================================================
+    // Modem Connection Simulation
+    // =====================================================
+    
+    async function showModemConnection() {
+        const skipModem = localStorage.getItem('punktet_skip_modem');
+        if (skipModem === 'true') {
+            return;
+        }
+        
+        clearScreen();
+        
+        print('|K═══════════════════════════════════════════════════════════════════════|N');
+        print('|c  PUNKTET BBS Terminal v1.0                                            |N');
+        print('|K═══════════════════════════════════════════════════════════════════════|N');
+        print('');
+        print('|YInitializing modem...|N');
+        await sleep(300);
+        
+        print('|cATZ|N                                         |GOK|N');
+        await sleep(200);
+        
+        print('|cATDT punktet.no|N');
+        await sleep(400);
+        
+        // Play modem sound
+        playModemSound();
+        
+        print('');
+        print('|YCONNECTING...|N');
+        print('');
+        
+        // Modem negotiation animation
+        const modemChars = '░▒▓█▓▒░';
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < modemChars.length; j++) {
+                print(`|c  ${modemChars[j]}${modemChars[(j+1)%modemChars.length]}${modemChars[(j+2)%modemChars.length]} Negotiating... ${modemChars[(j+3)%modemChars.length]}${modemChars[(j+4)%modemChars.length]}${modemChars[(j+5)%modemChars.length]}|N`, { newline: false });
+                await sleep(100);
+                print('\r                                            \r', { newline: false });
+            }
+        }
+        
+        const speedNames = {
+            0: '∞ Sci-Fi',
+            2400: '2400',
+            9600: '9600',
+            14400: '14400',
+            28800: '28800',
+            56000: '56000'
+        };
+        
+        print('');
+        print(`|GCONNECT ${speedNames[state.baudRate] || '56000'}|N`);
+        await sleep(300);
+        print('');
+        print('|G════════════════════════════════════════════════════════════════════════|N');
+        print('|G  Connection established!                                               |N');
+        print(`|G  Speed: ${speedNames[state.baudRate] || '56000'} bps   Protocol: 8-N-1   Error Correction: V.42bis  |N`);
+        print('|G════════════════════════════════════════════════════════════════════════|N');
+        print('');
+        await sleep(500);
+    }
+
+    // =====================================================
     // Initialization
     // =====================================================
     
@@ -2770,6 +3044,13 @@
         
         setupInput();
         setupSettings();
+        
+        // Show modem connection animation on first visit
+        const hasConnectedBefore = sessionStorage.getItem('punktet_connected');
+        if (!hasConnectedBefore) {
+            await showModemConnection();
+            sessionStorage.setItem('punktet_connected', 'true');
+        }
         
         // Check for existing session
         if (state.token) {
