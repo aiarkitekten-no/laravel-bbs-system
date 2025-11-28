@@ -340,12 +340,28 @@
         if (!state.soundEnabled) return;
         
         const audio = elements[soundId];
-        if (audio && audio.src && audio.duration > 0) {
+        if (audio) {
+            // Reset and play the full audio file
             audio.currentTime = 0;
-            audio.play().catch(() => {}); // Ignore autoplay restrictions
+            audio.volume = 0.7;
+            const playPromise = audio.play();
+            if (playPromise) {
+                playPromise.catch((e) => {
+                    console.log('Audio play failed, trying generated sound:', e);
+                    playGeneratedSound(soundId);
+                });
+            }
         } else {
             // Fallback to Web Audio API generated sounds
             playGeneratedSound(soundId);
+        }
+    }
+    
+    function stopSound(soundId) {
+        const audio = elements[soundId];
+        if (audio) {
+            audio.pause();
+            audio.currentTime = 0;
         }
     }
     
@@ -838,17 +854,23 @@
         
         // AT Commands sequence - slow and deliberate like a real modem
         const atCommands = [
-            { cmd: 'ATZ', response: 'OK', delay: 800 },
-            { cmd: 'AT&F', response: 'OK', delay: 600 },
-            { cmd: 'ATE1V1', response: 'OK', delay: 500 },
-            { cmd: 'AT+MS=V34', response: 'OK', delay: 700 },
-            { cmd: 'ATX4', response: 'OK', delay: 400 },
-            { cmd: 'ATDT punktet.no', response: null, delay: 800 }
+            { cmd: 'ATZ', response: 'OK', delay: 800, startSound: false },
+            { cmd: 'AT&F', response: 'OK', delay: 600, startSound: true },  // Start modem sound here!
+            { cmd: 'ATE1V1', response: 'OK', delay: 500, startSound: false },
+            { cmd: 'AT+MS=V34', response: 'OK', delay: 700, startSound: false },
+            { cmd: 'ATX4', response: 'OK', delay: 400, startSound: false },
+            { cmd: 'ATDT punktet.no', response: null, delay: 800, startSound: false }
         ];
         
         for (const at of atCommands) {
             if (skipped) break;
             print(`|c${at.cmd}|N`);
+            
+            // Start the modem sound at AT&F - let it play through the whole sequence!
+            if (at.startSound && !skipped) {
+                playModemSound();
+            }
+            
             await Promise.race([sleep(at.delay), skipPromise]);
             if (skipped) break;
             if (at.response) {
@@ -860,10 +882,6 @@
         if (!skipped) {
             print('');
             print('|YDIALING...|N');
-            
-            // Start modem sound RIGHT AWAY when dialing - this is when you hear it!
-            playModemSound();
-            
             await Promise.race([sleep(1000), skipPromise]);
         }
         
@@ -951,15 +969,21 @@
             await Promise.race([sleep(800), skipPromise]);
         }
         
-        // Clean up listener
+        // Clean up listener and stop sound if skipped
         if (skipListener) {
             document.removeEventListener('keydown', skipListener);
+        }
+        
+        // Stop modem sound if user skipped
+        if (skipped) {
+            stopSound('modemConnect');
         }
         
         if (!skipped) {
             print('');
             print('|Y  Verifying credentials...|N');
             await sleep(300);
+            // Let the modem sound fade naturally - it's about 20 seconds long
         }
         
         return skipped;
