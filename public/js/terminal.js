@@ -1192,18 +1192,106 @@
             }
         }
         
+        // Epic retro logout sequence!
+        await showRetroLogout();
+        
         state.token = null;
         state.user = null;
         localStorage.removeItem('punktet_token');
         
-        print('');
-        print('|yThank you for visiting PUNKTET BBS!|N');
-        print('|cCall again soon...|N');
-        print('');
-        
         state.currentArea = 'login';
         updateUserDisplay();
         showLoginPrompt();
+    }
+    
+    async function showRetroLogout() {
+        clearScreen();
+        
+        // Calculate session time
+        const sessionTime = state.connectedAt ? Math.floor((Date.now() - state.connectedAt) / 1000) : 0;
+        const sessionMins = Math.floor(sessionTime / 60);
+        const sessionSecs = sessionTime % 60;
+        
+        print('');
+        print('|R▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|N');
+        print('|R█|N                                                                      |R█|N');
+        print('|R█|Y   ██████╗  ██████╗  ██████╗ ██████╗ ██████╗ ██╗   ██╗███████╗██╗     |R█|N');
+        print('|R█|Y  ██╔════╝ ██╔═══██╗██╔═══██╗██╔══██╗██╔══██╗╚██╗ ██╔╝██╔════╝██║     |R█|N');
+        print('|R█|Y  ██║  ███╗██║   ██║██║   ██║██║  ██║██████╔╝ ╚████╔╝ █████╗  ██║     |R█|N');
+        print('|R█|Y  ██║   ██║██║   ██║██║   ██║██║  ██║██╔══██╗  ╚██╔╝  ██╔══╝  ╚═╝     |R█|N');
+        print('|R█|Y  ╚██████╔╝╚██████╔╝╚██████╔╝██████╔╝██████╔╝   ██║   ███████╗██╗     |R█|N');
+        print('|R█|Y   ╚═════╝  ╚═════╝  ╚═════╝ ╚═════╝ ╚═════╝    ╚═╝   ╚══════╝╚═╝     |R█|N');
+        print('|R█|N                                                                      |R█|N');
+        print('|R▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄|N');
+        print('');
+        
+        await sleep(500);
+        
+        // Session stats
+        print('|c╔══════════════════════════════════════════════════════════════════════╗|N');
+        print('|c║|W                      SESSION STATISTICS                             |c║|N');
+        print('|c╠══════════════════════════════════════════════════════════════════════╣|N');
+        print('|c║|N                                                                      |c║|N');
+        print(`|c║|N   User: |W${(state.user?.handle || 'Guest').padEnd(20)}|N  Node: |W${String(state.node || 1).padEnd(5)}|N             |c║|N`);
+        print(`|c║|N   Time Online: |G${String(sessionMins).padStart(3)}|N min |G${String(sessionSecs).padStart(2)}|N sec                                  |c║|N`);
+        print('|c║|N                                                                      |c║|N');
+        print('|c╚══════════════════════════════════════════════════════════════════════╝|N');
+        print('');
+        
+        await sleep(800);
+        
+        // The nostalgic warnings - 90s internet panic style!
+        const warnings = [
+            '|K───────────────────────────────────────────────────────────────────────|N',
+            '|K  DISCONNECTING FROM PUNKTET BBS...                                    |N',
+            '|K───────────────────────────────────────────────────────────────────────|N',
+            '',
+            '|Y  ⚠ REMINDER: Your parents\' phone bill will arrive in 2-3 weeks.|N',
+            '|K     (Hope you weren\'t on for too long this time...)|N',
+            '',
+            '|R  ⚠ WARNING: The FBI has logged your IP address.|N',
+            '|K     (Just kidding. Or are we? 👀)|N',
+            '',
+            '|M  ⚠ ALERT: According to tonight\'s news:|N',
+            '|K     "Experts say BBSes are CORRUPTING our youth!"|N',
+            '|K     "Is YOUR child talking to STRANGERS online?"|N',
+            '|K     "What HACKERS don\'t want you to know!"|N',
+            '',
+            '|c  ⚠ NOTICE: Your modem is now free for others to dial in.|N',
+            '|K     (Remember: Only 1 line, share with your family!)|N',
+            '',
+            '|G  ★ PROTIP: Tell Mom you were "doing homework."|N',
+            '|K     Works 60% of the time, every time.|N',
+            '',
+        ];
+        
+        for (const line of warnings) {
+            print(line);
+            await sleep(150);
+        }
+        
+        await sleep(500);
+        
+        // Modem disconnect sound simulation
+        print('|K───────────────────────────────────────────────────────────────────────|N');
+        print('');
+        print('|Y  NO CARRIER|N');
+        print('');
+        
+        await sleep(300);
+        
+        // Final message
+        print('|G╔══════════════════════════════════════════════════════════════════════╗|N');
+        print('|G║|N                                                                      |G║|N');
+        print('|G║|c       Thanks for calling |WPUNKTET BBS|c! Call again soon!              |G║|N');
+        print('|G║|N                                                                      |G║|N');
+        print('|G║|K   "The BBS may be gone, but the memories live forever."             |G║|N');
+        print('|G║|K                                           - Every SysOp Ever, 1995  |G║|N');
+        print('|G║|N                                                                      |G║|N');
+        print('|G╚══════════════════════════════════════════════════════════════════════╝|N');
+        print('');
+        
+        await sleep(1500);
     }
 
     // =====================================================
@@ -1275,6 +1363,7 @@
             'c': chatWithSysop,
             'w': showWhosOnline,
             'u': showUserSettings,
+            'g': logout,  // Goodbye/Logoff
             '': showMainMenu
         };
 
