@@ -810,11 +810,15 @@
     async function showLoginHandshake() {
         let skipped = false;
         let skipListener = null;
+        let canSkip = false;
         
-        // Allow skipping with any key
+        // Delay before allowing skip to prevent accidental skips from Enter key
+        setTimeout(() => { canSkip = true; }, 300);
+        
+        // Allow skipping with specific keys (after delay)
         const skipPromise = new Promise(resolve => {
             skipListener = (e) => {
-                if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') {
+                if (canSkip && (e.key === 'Escape' || e.key === ' ')) {
                     skipped = true;
                     resolve();
                 }
@@ -822,10 +826,12 @@
             document.addEventListener('keydown', skipListener);
         });
         
+        clearScreen();
+        print('|K═══════════════════════════════════════════════════════════════════════|N');
+        print('|c  PUNKTET BBS - Modem Connection                                       |N');
+        print('|K═══════════════════════════════════════════════════════════════════════|N');
         print('');
-        print('|K─────────────────────────────────────────────────────────────────────|N');
-        print('|c                    Press [SPACE] or [ESC] to skip                   |N');
-        print('|K─────────────────────────────────────────────────────────────────────|N');
+        print('|K                    Press [SPACE] or [ESC] to skip                     |N');
         print('');
         
         // AT Commands sequence
