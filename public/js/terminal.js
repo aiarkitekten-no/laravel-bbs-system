@@ -843,7 +843,7 @@
             { cmd: 'ATE1V1', response: 'OK', delay: 500 },
             { cmd: 'AT+MS=V34', response: 'OK', delay: 700 },
             { cmd: 'ATX4', response: 'OK', delay: 400 },
-            { cmd: 'ATDT punktet.no', response: null, delay: 1000 }
+            { cmd: 'ATDT punktet.no', response: null, delay: 800 }
         ];
         
         for (const at of atCommands) {
@@ -860,13 +860,11 @@
         if (!skipped) {
             print('');
             print('|YDIALING...|N');
-            await Promise.race([sleep(1500), skipPromise]);
-        }
-        
-        // Play modem sound (the iconic screech!)
-        if (!skipped) {
+            
+            // Start modem sound RIGHT AWAY when dialing - this is when you hear it!
             playModemSound();
-            await Promise.race([sleep(500), skipPromise]);
+            
+            await Promise.race([sleep(1000), skipPromise]);
         }
         
         if (!skipped) {

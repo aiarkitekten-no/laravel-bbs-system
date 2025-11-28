@@ -93,7 +93,7 @@
 
     <!-- Audio elements for modem sounds -->
     <audio id="modemConnect" preload="auto">
-        <source src="{{ asset('sounds/modem-connect.mp3') }}" type="audio/mpeg">
+        <source src="{{ asset('sounds/modem-us-robotics-417318.mp3') }}" type="audio/mpeg">
     </audio>
     <audio id="keyClick" preload="auto">
         <source src="{{ asset('sounds/keyclick.mp3') }}" type="audio/mpeg">
