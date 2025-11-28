@@ -76,6 +76,71 @@ Route::middleware(['locale'])->group(function () {
     Route::get('/conferences', [App\Http\Controllers\Api\ConferenceController::class, 'index']);
 
     // ==========================================
+    // PUBLIC FILE AREA (read-only)
+    // ==========================================
+    Route::prefix('files')->group(function () {
+        Route::get('/categories', [FileController::class, 'categories']);
+        Route::get('/categories/{categoryId}', [FileController::class, 'list']);
+        Route::get('/search', [FileController::class, 'search']);
+        Route::get('/new', [FileController::class, 'newSince']);
+        Route::get('/top-uploaders', [FileController::class, 'topUploaders']);
+        Route::get('/{fileId}', [FileController::class, 'show'])->where('fileId', '[0-9]+');
+    });
+
+    // ==========================================
+    // PUBLIC GAMES (read-only)
+    // ==========================================
+    Route::prefix('games')->group(function () {
+        Route::get('/', [GameController::class, 'index']);
+        Route::get('/highscores', [GameController::class, 'globalHighscores']);
+        Route::get('/achievements', [GameController::class, 'achievements']);
+        Route::get('/{slug}', [GameController::class, 'show'])->where('slug', '[a-z0-9-]+');
+        Route::get('/{slug}/highscores', [GameController::class, 'highscores'])->where('slug', '[a-z0-9-]+');
+    });
+
+    // ==========================================
+    // PUBLIC ANSI ART GALLERY (read-only)
+    // ==========================================
+    Route::prefix('ansi')->group(function () {
+        Route::get('/', [AnsiArtController::class, 'index']);
+        Route::get('/categories', [AnsiArtController::class, 'categories']);
+        Route::get('/random', [AnsiArtController::class, 'random']);
+        Route::get('/{id}', [AnsiArtController::class, 'show'])->where('id', '[0-9]+');
+    });
+
+    // ==========================================
+    // PUBLIC POLLS (read-only)
+    // ==========================================
+    Route::prefix('polls')->group(function () {
+        Route::get('/', [PollController::class, 'index']);  // Use ?active=true for active polls
+        Route::get('/{id}', [PollController::class, 'show'])->where('id', '[0-9]+');
+        Route::get('/{id}/results', [PollController::class, 'results'])->where('id', '[0-9]+');
+    });
+
+    // ==========================================
+    // PUBLIC BULLETINS (read-only)
+    // ==========================================
+    Route::prefix('bulletin')->group(function () {
+        Route::get('/', [BulletinController::class, 'index']);
+        Route::get('/bbs-links', [BulletinController::class, 'bbsList']);
+        Route::get('/logoff-quote', [BulletinController::class, 'randomQuote']);
+        Route::get('/{id}', [BulletinController::class, 'show'])->where('id', '[0-9]+');
+    });
+
+    // ==========================================
+    // PUBLIC SOCIAL (read-only)
+    // ==========================================
+    Route::prefix('social')->group(function () {
+        Route::get('/clubs', [SocialController::class, 'clubs']);
+        Route::get('/clubs/{id}', [SocialController::class, 'showClub'])->where('id', '[0-9]+');
+        Route::get('/awards', [SocialController::class, 'awards']);
+        Route::get('/awards/month/{year}/{month}', [SocialController::class, 'awardsByMonth']);
+        Route::get('/graffiti', [SocialController::class, 'graffitiWall']);
+        Route::get('/birthdays', [SocialController::class, 'todaysBirthdays']);
+        Route::get('/birthdays/upcoming', [SocialController::class, 'upcomingBirthdays']);
+    });
+
+    // ==========================================
     // AUTHENTICATED ROUTES
     // ==========================================
     
@@ -228,109 +293,72 @@ Route::middleware(['locale'])->group(function () {
         });
 
         // ==========================================
-        // FILE AREA (Phase 7)
+        // FILE AREA - Authenticated actions only
         // ==========================================
 
         Route::prefix('files')->group(function () {
-            Route::get('/categories', [FileController::class, 'categories']);
-            Route::get('/categories/{categoryId}', [FileController::class, 'list']);
-            Route::get('/search', [FileController::class, 'search']);
-            Route::get('/new', [FileController::class, 'newSince']);
-            Route::get('/top-uploaders', [FileController::class, 'topUploaders']);
             Route::post('/duplicate-check', [FileController::class, 'duplicateCheck']);
             Route::post('/upload', [FileController::class, 'upload']);
-            Route::get('/{fileId}', [FileController::class, 'show']);
             Route::get('/{fileId}/download', [FileController::class, 'download']);
             Route::post('/requests', [FileController::class, 'createRequest']);
             Route::get('/requests/open', [FileController::class, 'openRequests']);
         });
 
         // ==========================================
-        // DOOR GAMES (Phase 8)
+        // DOOR GAMES - Authenticated actions only
         // ==========================================
 
         Route::prefix('games')->group(function () {
-            Route::get('/', [GameController::class, 'index']);
-            Route::get('/highscores', [GameController::class, 'globalHighscores']);
-            Route::get('/achievements', [GameController::class, 'achievements']);
             Route::get('/my-achievements', [GameController::class, 'myAchievements']);
-            Route::get('/{slug}', [GameController::class, 'show']);
             Route::post('/{slug}/start', [GameController::class, 'start']);
             Route::post('/{slug}/action', [GameController::class, 'action']);
-            Route::get('/{slug}/highscores', [GameController::class, 'highscores']);
             Route::get('/{slug}/state', [GameController::class, 'getState']);
         });
 
         // ==========================================
-        // ANSI ART GALLERY (Phase 10)
+        // ANSI ART GALLERY - Authenticated actions only
         // ==========================================
 
         Route::prefix('ansi')->group(function () {
-            Route::get('/', [AnsiArtController::class, 'index']);
-            Route::get('/categories', [AnsiArtController::class, 'categories']);
-            Route::get('/random', [AnsiArtController::class, 'random']);
             Route::get('/favorites', [AnsiArtController::class, 'myFavorites']);
-            Route::get('/{id}', [AnsiArtController::class, 'show']);
             Route::post('/', [AnsiArtController::class, 'store']);
             Route::post('/{id}/view', [AnsiArtController::class, 'view']);
             Route::post('/{id}/favorite', [AnsiArtController::class, 'toggleFavorite']);
         });
 
         // ==========================================
-        // POLLS / VOTING BOOTH (Phase 10)
+        // POLLS - Authenticated actions only
         // ==========================================
 
         Route::prefix('polls')->group(function () {
-            Route::get('/', [PollController::class, 'index']);
-            Route::get('/active', [PollController::class, 'active']);
-            Route::get('/ended', [PollController::class, 'ended']);
             Route::get('/my-votes', [PollController::class, 'myVotes']);
-            Route::get('/{id}', [PollController::class, 'show']);
             Route::post('/', [PollController::class, 'create']);
             Route::post('/{id}/vote', [PollController::class, 'vote']);
         });
 
         // ==========================================
-        // BULLETINS & BBS INFO (Phase 10)
+        // BULLETINS - (all public, nothing here)
         // ==========================================
 
-        Route::prefix('bulletin')->group(function () {
-            Route::get('/', [BulletinController::class, 'bulletins']);
-            Route::get('/bbs-links', [BulletinController::class, 'bbsLinks']);
-            Route::get('/logoff-quote', [BulletinController::class, 'logoffQuote']);
-            Route::get('/system-info', [BulletinController::class, 'systemInfo']);
-            Route::get('/{id}', [BulletinController::class, 'show']);
-        });
-
         // ==========================================
-        // SOCIAL FEATURES (Phase 10)
+        // SOCIAL FEATURES - Authenticated actions only
         // ==========================================
 
         Route::prefix('social')->group(function () {
-            // Time Bank
+            // Time Bank (all require auth)
             Route::get('/time-bank', [SocialController::class, 'timeBank']);
             Route::post('/time-bank/deposit', [SocialController::class, 'timeBankDeposit']);
             Route::post('/time-bank/withdraw', [SocialController::class, 'timeBankWithdraw']);
             Route::get('/time-bank/history', [SocialController::class, 'timeBankHistory']);
             
-            // User Clubs
-            Route::get('/clubs', [SocialController::class, 'clubs']);
-            Route::get('/clubs/{id}', [SocialController::class, 'showClub']);
+            // User Clubs - write operations
             Route::post('/clubs', [SocialController::class, 'createClub']);
             Route::post('/clubs/{id}/join', [SocialController::class, 'joinClub']);
             Route::delete('/clubs/{id}/leave', [SocialController::class, 'leaveClub']);
             
-            // Awards
-            Route::get('/awards', [SocialController::class, 'awards']);
-            Route::get('/awards/month/{year}/{month}', [SocialController::class, 'awardsByMonth']);
-            
-            // Graffiti Wall
-            Route::get('/graffiti', [SocialController::class, 'graffitiWall']);
+            // Graffiti Wall - write operations
             Route::post('/graffiti', [SocialController::class, 'createGraffiti']);
             Route::delete('/graffiti/{id}', [SocialController::class, 'deleteGraffiti']);
-            
-            // Birthdays
-            Route::get('/birthdays', [SocialController::class, 'birthdays']);
         });
     });
 });
