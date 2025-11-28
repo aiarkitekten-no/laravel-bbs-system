@@ -1,125 +1,102 @@
 {
   "prosjekt": "PUNKTET BBS - Norsk Retro BBS System",
-  "dato": "2025-11-27",
-  "status": "Under utvikling - AI Life System",
+  "dato": "2025-11-28",
+  "status": "AI Life System FUNGERER ✅",
   
-  "fullfort_i_dag": {
-    "frontend": [
-      "Fikset registreringsprosess med validering av handle (kun bokstaver, tall, dash, underscore)",
-      "Fikset promptUser() for å unngå dobbelt input-behandling",
-      "Lagt til passord-bekreftelse i registrering",
-      "Opprettet ConferenceController med join-funksjonalitet"
+  "fullfort_i_dag_28_nov": {
+    "ai_fixes": [
+      "✅ Fikset AI daemon error handling med comprehensive try-catch",
+      "✅ Fikset forum field names (body/subject istedenfor content/title)",
+      "✅ Fikset story_comments field (body istedenfor content)",
+      "✅ Fikset story count i status (story_date vs created_at)",
+      "✅ Koblet alle 8 AI-brukere til unike noder",
+      "✅ Slettet 50 gamle unødvendige AI-brukere"
     ],
-    "backend": [
-      "VIP-noder: Node::getFirstAvailable() oppretter automatisk VIP-node når alle er opptatt",
-      "Lagt til conference routes i api.php",
-      "Opprettet AiLifeService - komplett AI-livssimulering",
-      "Opprettet AiLifeSimulator kommando (php artisan ai:life)",
-      "Fikset database-kolonner: deleted_at på stories/polls, expires_at på polls",
-      "Opprettet 6 morsomme norske historier i databasen",
-      "Opprettet 8 nye AI-brukere med unike personligheter"
+    "new_features": [
+      "✅ AiChatService - brukere kan nå chatte med AI",
+      "✅ Content filtering - blokkerer upassende samtaler",
+      "✅ OpenAI-integrasjon for naturlige AI-svar",
+      "✅ Auto-response med 2-8 sekunders delay"
     ],
-    "ai_system": [
-      "AiLifeService med 8 personligheter (RetroBot, SysBot, Speed-O, MyOne, Sketchy, Hacker-ruleZ, IWTBF, MyStory)",
-      "Vektet handlingsvalg: oneliners 30%, forum_reply 25%, node_chat 20%, story 10%, etc",
-      "OpenAI-integrasjon for dynamisk innholdsgenerering",
-      "Fallback til pre-skrevne templates når OpenAI ikke er tilgjengelig",
-      "Nattmodus (23:00-06:00) med minimal aktivitet"
+    "deployment": [
+      "✅ AI daemon kjører som bakgrunnsprosess",
+      "✅ Opprettet ai-cron.sh for cron-basert kjøring",
+      "✅ Opprettet punktet-ai.service for systemd"
     ]
   },
 
-  "gjenstaar": {
-    "hoy_prioritet": [
-      "AI Life daemon krasjer fortsatt på noen operasjoner - trenger mer robust error handling",
-      "Forum-posting feiler pga manglende kategorier - må opprette forum-kategorier",
-      "Flere AI-brukere må kobles til noder (kun 2 av 8 er online)",
-      "Stories vises ikke i frontend - sjekk API endpoint /api/stories/today"
+  "ai_system_status": {
+    "total_ai_users": 8,
+    "online_ai_users": 8,
+    "personalities": [
+      "RetroBot - nostalgisk, BBS-historie, dad jokes",
+      "SysBot - teknisk, Linux/servere, tørr humor",
+      "Speed-O - gamer, energisk, mye emojis",
+      "MyOne - filosofisk, reflektert, musikk",
+      "Sketchy - artist, ANSI/demoscene, absurd humor",
+      "Hacker-ruleZ - l33t, sikkerhet, sarkastisk",
+      "IWTBF - casual, popkultur, mat",
+      "MyStory - historieforteller, humor"
     ],
-    "medium_prioritet": [
-      "Chat med AI-brukere for innloggede brukere (med NO-adult-chat filter)",
-      "AI skal svare på direktemeldinger fra ekte brukere",
-      "Mer variasjon i AI-aktivitet gjennom døgnet",
-      "AI skal lage nye historier automatisk (ikke bare bruke templates)"
-    ],
-    "lav_prioritet": [
-      "Rydde opp i de 58 AI-brukerne (mange gamle/ubrukte)",
-      "Bedre VIP-node visning i frontend",
-      "AI-brukere bør ha profilbilder/avatarer",
-      "Statistikk-dashboard for AI-aktivitet"
-    ]
-  },
-
-  "kjente_problemer": {
-    "fikset": [
-      "OpenAI temperature må være float, ikke string - FIKSET",
-      "NodeChatMessage bruker from_node_id ikke from_node - FIKSET", 
-      "Category mangler 'type' kolonne - FIKSET (bruker slug filter i stedet)",
-      "Story unik constraint på category_id+story_date - WORKAROUND (forskjellige datoer)"
-    ],
-    "ufikset": [
-      "AI Life daemon stopper etter feil i stedet for å fortsette",
-      "Noen AI-handlinger returnerer null som krasjer løkken",
-      "MessageThread og Message modeller kan mangle nødvendige felter"
-    ]
-  },
-
-  "database_endringer": {
-    "nye_tabeller": [],
-    "endrede_kolonner": [
-      "stories: lagt til deleted_at",
-      "polls: lagt til deleted_at og expires_at"
-    ],
-    "nye_kategorier": [
-      "daily-stories (id: 8) - for AI-genererte historier"
-    ]
-  },
-
-  "kjoerende_prosesser": {
-    "ai_life_daemon": {
-      "kommando": "php artisan ai:life",
-      "status": "Startet men kan ha krasjet",
-      "logg": "storage/logs/ai-life.log",
-      "intervall": "6-10 minutter mellom kjøringer"
+    "todays_activity": {
+      "oneliners": 6,
+      "forum_posts": 4,
+      "stories": 1,
+      "node_chats": "multiple"
     }
   },
 
-  "env_variabler_i_bruk": {
-    "AI_NODES_ENABLED": true,
-    "AI_NODES_COUNT": 12,
-    "AI_ACTIVITY_INTERVAL": 30,
-    "AI_USERNAMES": "RetroBot,SysBot,Speed-O,MyOne,Sketchy,Hacker-ruleZ,IWTBF,MyStory",
-    "OPENAI_API_KEY": "sk-proj-... (satt)",
-    "OPENAI_MODEL": "gpt-4o-mini"
+  "ai_chat_system": {
+    "service": "app/Services/AiChatService.php",
+    "integration": "app/Http/Controllers/Api/NodeController.php",
+    "features": [
+      "Auto-response til meldinger sendt til AI-brukere",
+      "OpenAI for intelligente svar",
+      "Fallback til template-svar",
+      "STRENG innholdsfiltrering"
+    ],
+    "content_filtering": {
+      "blocked_topics": ["romantikk", "dating", "sex", "flørting"],
+      "redirect_response": "Bytter tema til tech/gaming/BBS"
+    }
   },
 
-  "nyttige_kommandoer": {
-    "sjekk_status": "php artisan ai:life --status",
-    "kjor_en_gang": "php artisan ai:life --once",
-    "setup_ai_brukere": "php artisan ai:life --setup",
-    "start_daemon": "nohup php artisan ai:life >> storage/logs/ai-life.log 2>&1 &",
-    "stopp_daemon": "pkill -f 'ai:life'",
-    "sjekk_historier": "php artisan tinker --execute=\"App\\Models\\Story::count()\"",
-    "sjekk_oneliners": "php artisan tinker --execute=\"App\\Models\\Oneliner::latest()->take(5)->get()\""
+  "daemon_setup": {
+    "current_method": "nohup php artisan ai:life > storage/logs/ai-daemon.log 2>&1 &",
+    "cron_alternative": "*/6 * * * * /var/www/vhosts/punktet.no/httpdocs/ai-cron.sh",
+    "systemd_service": "punktet-ai.service",
+    "log_file": "storage/logs/ai-daemon.log"
   },
 
-  "filer_endret_i_dag": [
-    "public/js/terminal.js - registrering, promptUser fix",
-    "app/Models/Node.php - VIP node creation",
-    "app/Services/AiLifeService.php - NY FIL - komplett AI livssystem",
-    "app/Services/AiNodeService.php - oppdatert med try-catch",
-    "app/Console/Commands/AiLifeSimulator.php - NY FIL",
-    "app/Http/Controllers/Api/ConferenceController.php - NY FIL",
-    "routes/api.php - conference routes",
-    "config/ai.php - flere norske oneliners",
-    "database/migrations/2025_11_27_142622_add_deleted_at_to_stories_table.php - NY"
+  "files_changed_today": [
+    "app/Console/Commands/AiLifeSimulator.php",
+    "app/Services/AiLifeService.php",
+    "app/Services/AiChatService.php (NEW)",
+    "app/Http/Controllers/Api/NodeController.php",
+    "ai-cron.sh (NEW)",
+    "punktet-ai.service (NEW)"
   ],
 
-  "neste_gang": [
-    "1. Sjekk at AI Life daemon kjører stabilt",
-    "2. Opprett forum-kategorier for AI-diskusjoner",
-    "3. Koble flere AI-brukere til noder",
-    "4. Test at historier vises i frontend",
-    "5. Implementer chat med AI-brukere",
-    "6. Push alt til repo"
-  ]
+  "next_steps": [
+    "Sett opp permanent cron via Plesk scheduled tasks",
+    "Test AI chat via BBS frontend terminal",
+    "Push oppdateringer til GitHub",
+    "Overvåk AI aktivitet over tid",
+    "Legg til flere forum topics/kategorier"
+  ],
+
+  "database_info": {
+    "connection": "mysql (NOT mariadb)",
+    "database": "admin_punkteT",
+    "user": "admin_punkteT",
+    "key_tables": {
+      "users": "is_bot=true for AI users",
+      "nodes": "current_user_id, current_activity",
+      "oneliners": "user_id, content",
+      "stories": "title_no, content_no, story_date",
+      "message_threads": "subject (NOT title)",
+      "messages": "body (NOT content)",
+      "story_comments": "body (NOT content)"
+    }
+  }
 }

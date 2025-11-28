@@ -87,7 +87,7 @@ class AiLifeSimulator extends Command
         $this->table(['Metric', 'Value'], [
             ['Total AI Users', $aiUsers->count()],
             ['Online AI Users', $onlineAi],
-            ['Stories Today', \App\Models\Story::whereDate('created_at', today())->count()],
+            ['Stories Today', \App\Models\Story::whereDate('story_date', today())->count()],
             ['Oneliners Today', \App\Models\Oneliner::whereDate('created_at', today())->count()],
             ['Forum Posts Today', \App\Models\Message::whereDate('created_at', today())->count()],
         ]);
@@ -135,32 +135,61 @@ class AiLifeSimulator extends Command
         $this->line('');
 
         // Ensure AI users exist
-        $this->lifeService->ensureAiUsersExist();
+        try {
+            $this->lifeService->ensureAiUsersExist();
+        } catch (\Exception $e) {
+            $this->error('Failed to setup AI users: ' . $e->getMessage());
+        }
+
+        $errorCount = 0;
+        $maxErrors = 10;
 
         while (true) {
-            $hour = (int) date('H');
-            
-            // Night mode (23:00 - 06:00)
-            if ($hour >= 23 || $hour < 6) {
-                $this->line('[' . date('H:i:s') . '] Night mode - sleeping...');
-                sleep(300); // Check every 5 minutes during night
-                continue;
-            }
-
-            // Update node activity
-            $this->nodeService->simulateActivity();
-            
-            // Run life cycle
-            $result = $this->lifeService->runLifeCycle();
-            
-            $actionsStr = $result['actions'] > 0 ? "{$result['actions']} actions" : "no actions";
-            $this->line('[' . date('H:i:s') . "] {$actionsStr}");
-            
-            if (!empty($result['details'])) {
-                foreach ($result['details'] as $action) {
-                    $detail = $action['content'] ?? $action['title'] ?? $action['message'] ?? '';
-                    $this->line("    [{$action['type']}] {$action['user']}: " . substr($detail, 0, 40));
+            try {
+                $hour = (int) date('H');
+                
+                // Night mode (23:00 - 06:00)
+                if ($hour >= 23 || $hour < 6) {
+                    $this->line('[' . date('H:i:s') . '] Night mode - sleeping...');
+                    sleep(300); // Check every 5 minutes during night
+                    continue;
                 }
+
+                // Update node activity
+                try {
+                    $this->nodeService->simulateActivity();
+                } catch (\Exception $e) {
+                    $this->warn('[' . date('H:i:s') . '] Node activity error: ' . substr($e->getMessage(), 0, 100));
+                }
+                
+                // Run life cycle
+                $result = $this->lifeService->runLifeCycle();
+                
+                $actionsStr = $result['actions'] > 0 ? "{$result['actions']} actions" : "no actions";
+                $this->line('[' . date('H:i:s') . "] {$actionsStr}");
+                
+                if (!empty($result['details'])) {
+                    foreach ($result['details'] as $action) {
+                        $detail = $action['content'] ?? $action['title'] ?? $action['message'] ?? '';
+                        $this->line("    [{$action['type']}] {$action['user']}: " . substr($detail, 0, 40));
+                    }
+                }
+
+                // Reset error count on success
+                $errorCount = 0;
+
+            } catch (\Exception $e) {
+                $errorCount++;
+                $this->error('[' . date('H:i:s') . '] Error (' . $errorCount . '/' . $maxErrors . '): ' . $e->getMessage());
+                
+                if ($errorCount >= $maxErrors) {
+                    $this->error('Too many consecutive errors. Stopping daemon.');
+                    return 1;
+                }
+                
+                // Short sleep after error
+                sleep(60);
+                continue;
             }
 
             // Random sleep 6-10 minutes

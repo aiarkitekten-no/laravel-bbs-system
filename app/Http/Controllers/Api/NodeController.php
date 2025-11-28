@@ -7,12 +7,20 @@ use App\Models\Node;
 use App\Models\NodeChatMessage;
 use App\Models\User;
 use App\Models\UserAutoReply;
+use App\Services\AiChatService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class NodeController extends Controller
 {
+    protected AiChatService $aiChatService;
+
+    public function __construct(AiChatService $aiChatService)
+    {
+        $this->aiChatService = $aiChatService;
+    }
+
     /**
      * Get all nodes status
      */
@@ -238,6 +246,12 @@ class NodeController extends Controller
                 'from' => $toUser->handle,
                 'message' => $autoReplyMessage,
             ];
+        }
+
+        // Queue AI response if messaging an AI user
+        if ($toUser && $toUser->is_bot) {
+            $this->aiChatService->queueResponse($toUser, $user, $request->message, $fromNode);
+            $response['ai_will_respond'] = true;
         }
 
         return response()->json($response);

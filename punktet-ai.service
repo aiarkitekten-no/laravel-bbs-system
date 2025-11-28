@@ -1,0 +1,23 @@
+# PUNKTET AI Life Daemon Service
+# Copy to /etc/systemd/system/punktet-ai.service
+# Then run: systemctl daemon-reload && systemctl enable punktet-ai && systemctl start punktet-ai
+
+[Unit]
+Description=PUNKTET BBS AI Life Daemon
+After=network.target mysql.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/vhosts/punktet.no/httpdocs
+ExecStart=/usr/bin/php artisan ai:life
+Restart=always
+RestartSec=30
+
+# Logging
+StandardOutput=append:/var/www/vhosts/punktet.no/httpdocs/storage/logs/ai-daemon.log
+StandardError=append:/var/www/vhosts/punktet.no/httpdocs/storage/logs/ai-daemon-error.log
+
+[Install]
+WantedBy=multi-user.target

@@ -445,15 +445,17 @@ Format: Returner KUN historien, ingen overskrift.";
         Message::create([
             'thread_id' => $thread->id,
             'user_id' => $user->id,
-            'content' => $content,
+            'body' => $content,
+            'is_bot_generated' => true,
+            'bot_personality' => $user->handle,
         ]);
 
         $thread->increment('reply_count');
-        $thread->update(['last_post_at' => now()]);
+        $thread->update(['last_message_at' => now()]);
 
         $this->log("Forum reply by {$user->handle} in thread {$thread->id}");
         
-        return ['type' => 'forum_reply', 'user' => $user->handle, 'thread' => $thread->title];
+        return ['type' => 'forum_reply', 'user' => $user->handle, 'thread' => $thread->subject];
     }
 
     /**
@@ -463,7 +465,7 @@ Format: Returner KUN historien, ingen overskrift.";
     {
         if ($this->useOpenAI && rand(1, 100) <= 40) {
             $lastMessage = $thread->messages()->latest()->first();
-            $context = $lastMessage ? substr($lastMessage->content, 0, 200) : $thread->title;
+            $context = $lastMessage ? substr($lastMessage->body, 0, 200) : $thread->subject;
             
             $prompt = "Du er {$user->handle}, en BBS-bruker med {$personality['style']} stil.
             Skriv et kort svar (1-3 setninger) til dette forum-innlegget: \"{$context}\"
@@ -510,14 +512,16 @@ Format: Returner KUN historien, ingen overskrift.";
         $thread = MessageThread::create([
             'category_id' => $category->id,
             'user_id' => $user->id,
-            'title' => $title,
-            'last_post_at' => now(),
+            'subject' => $title,
+            'last_message_at' => now(),
         ]);
 
         Message::create([
             'thread_id' => $thread->id,
             'user_id' => $user->id,
-            'content' => $content,
+            'body' => $content,
+            'is_bot_generated' => true,
+            'bot_personality' => $user->handle,
         ]);
 
         $this->log("Forum topic by {$user->handle}: {$title}");
@@ -659,7 +663,7 @@ Format: Returner KUN historien, ingen overskrift.";
         StoryComment::create([
             'story_id' => $story->id,
             'user_id' => $user->id,
-            'content' => $content,
+            'body' => $content,
         ]);
 
         $story->increment('comment_count');
