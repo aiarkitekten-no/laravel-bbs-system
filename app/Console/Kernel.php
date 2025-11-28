@@ -27,6 +27,12 @@ class Kernel extends ConsoleKernel
         $schedule->command('bbs:reset-daily-time')
             ->dailyAt('00:00')
             ->timezone('Europe/Oslo');
+            
+        // Virus scan pending files - every 15 minutes
+        $schedule->command('bbs:scan-files --limit=50')
+            ->everyFifteenMinutes()
+            ->withoutOverlapping()
+            ->runInBackground();
     }
 
     /**

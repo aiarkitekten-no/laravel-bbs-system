@@ -69,10 +69,26 @@ return [
     
     // Validation
     'duplicate_detected' => 'Duplikat fil oppdaget',
+    'duplicate_found' => 'Denne filen finnes allerede i systemet',
     'virus_detected' => 'Virus oppdaget i filen',
     'invalid_type' => 'Ugyldig filtype',
+    'invalid_file_type' => 'Denne filtypen er ikke tillatt',
+    'dangerous_file_type' => 'Denne filtypen kan være farlig og er blokkert',
     'file_too_large' => 'Filen overskrider maksimal størrelse',
     'file_not_found' => 'Fil ikke funnet',
+    'validation_error' => 'Valideringsfeil',
+    'unauthorized' => 'Du har ikke tilgang til denne funksjonen',
+    
+    // Upload messages
+    'uploaded_approved' => 'Filen ble lastet opp og godkjent!',
+    'uploaded_pending' => 'Filen ble lastet opp og venter på godkjenning.',
+    
+    // Download messages  
+    'insufficient_credits' => 'Ikke nok credits. Trenger :required, har :available.',
+    'ratio_too_low' => 'Din ratio (:current) er for lav. Minimum :required kreves.',
+    
+    // File requests
+    'request_created' => 'Forespørsel opprettet',
     
     // Sizes
     'bytes' => 'bytes',

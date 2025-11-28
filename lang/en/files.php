@@ -69,10 +69,26 @@ return [
     
     // Validation
     'duplicate_detected' => 'Duplicate file detected',
+    'duplicate_found' => 'This file already exists in the system',
     'virus_detected' => 'Virus detected in file',
     'invalid_type' => 'Invalid file type',
+    'invalid_file_type' => 'This file type is not allowed',
+    'dangerous_file_type' => 'This file type may be dangerous and is blocked',
     'file_too_large' => 'File exceeds maximum size limit',
     'file_not_found' => 'File not found',
+    'validation_error' => 'Validation error',
+    'unauthorized' => 'You do not have access to this function',
+    
+    // Upload messages
+    'uploaded_approved' => 'File uploaded and approved!',
+    'uploaded_pending' => 'File uploaded and awaiting approval.',
+    
+    // Download messages
+    'insufficient_credits' => 'Not enough credits. Required :required, have :available.',
+    'ratio_too_low' => 'Your ratio (:current) is too low. Minimum :required required.',
+    
+    // File requests
+    'request_created' => 'Request created',
     
     // Sizes
     'bytes' => 'bytes',

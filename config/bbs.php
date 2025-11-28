@@ -66,17 +66,32 @@ return [
     // ===================
 
     'files' => [
-        'max_upload_size' => env('BBS_MAX_UPLOAD_SIZE', 10485760), // 10 MB
+        'max_upload_size' => env('BBS_MAX_UPLOAD_SIZE', 104857600), // 100 MB
         'allowed_extensions' => [
-            'zip', 'rar', '7z', 'gz', 'tar',
-            'txt', 'doc', 'pdf', 'nfo', 'diz',
-            'gif', 'jpg', 'jpeg', 'png', 'bmp',
-            'mp3', 'mod', 'xm', 's3m', 'it',
-            'exe', 'com',
+            'zip', 'rar', '7z', 'gz', 'tar', 'bz2', 'xz', 'lha', 'lzh', 'arj',
+            'txt', 'doc', 'docx', 'pdf', 'rtf', 'odt', 'nfo', 'diz',
+            'gif', 'jpg', 'jpeg', 'png', 'bmp', 'ico', 'webp',
+            'mp3', 'wav', 'ogg', 'flac', 'mod', 'xm', 's3m', 'it', 'sid',
+            'mp4', 'avi', 'mkv', 'webm',
+            'ans', 'asc',
         ],
-        'storage_path' => env('BBS_FILES_PATH', 'bbs/files'),
+        'storage_path' => env('BBS_FILES_PATH', 'files'),
+        
+        // Ratio system
         'ratio_required' => env('BBS_RATIO_REQUIRED', true),
-        'default_ratio' => env('BBS_DEFAULT_RATIO', 3), // 3:1 download/upload
+        'default_ratio' => env('BBS_DEFAULT_RATIO', 3), // 3:1 download/upload required
+        'ratio_exempt_levels' => ['ELITE', 'COSYSOP', 'SYSOP'], // Users exempt from ratio
+        
+        // Credits system
+        'credits_per_upload_mb' => env('BBS_CREDITS_PER_UPLOAD_MB', 10),
+        'credits_per_download_mb' => env('BBS_CREDITS_PER_DOWNLOAD_MB', 5),
+        'free_leech_enabled' => env('BBS_FREE_LEECH', false),
+        
+        // Virus scanning
+        'virus_scan_enabled' => env('BBS_VIRUS_SCAN', false),
+        'clamav_socket' => env('CLAMAV_SOCKET', '/var/run/clamav/clamd.ctl'),
+        'clamscan_path' => env('CLAMSCAN_PATH', '/usr/bin/clamscan'),
+        'quarantine_path' => env('BBS_QUARANTINE_PATH', 'quarantine'),
     ],
 
     // ===================

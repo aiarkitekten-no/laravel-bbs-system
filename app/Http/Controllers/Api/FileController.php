@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\File;
 use App\Models\FileCategory;
 use App\Models\FileRequest;
+use App\Services\VirusScanService;
+use App\Services\FileCreditsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -14,6 +16,11 @@ use Illuminate\Support\Str;
 
 class FileController extends Controller
 {
+    public function __construct(
+        private VirusScanService $virusScanService,
+        private FileCreditsService $creditsService,
+    ) {}
+
     /**
      * Get all file categories
      */
@@ -190,6 +197,24 @@ class FileController extends Controller
             'status' => File::STATUS_PENDING,
         ]);
 
+        // Virus scan the uploaded file
+        $scanResult = $this->virusScanService->scanFile(
+            $uploadedFile->getRealPath(),
+            $file
+        );
+        
+        if ($scanResult['virus_detected'] ?? false) {
+            // File already quarantined and rejected by the service
+            return response()->json([
+                'success' => false,
+                'message' => __('files.virus_detected'),
+                'virus_name' => $scanResult['virus_name'] ?? 'Unknown',
+            ], 422);
+        }
+
+        // Record upload stats for ratio system
+        $this->creditsService->recordUpload($user, $file);
+
         // Auto-approve for staff
         if ($user->isStaff()) {
             $file->approve($user);
@@ -213,17 +238,22 @@ class FileController extends Controller
         $file = File::findOrFail($fileId);
         $user = $request->user();
 
-        if (!$file->canDownload($user)) {
+        // Check ratio and credits with the credits service
+        $canDownload = $this->creditsService->canDownload($user, $file);
+        
+        if (!$canDownload['allowed']) {
             return response()->json([
                 'success' => false,
-                'message' => __('files.insufficient_credits'),
-                'credits_required' => $file->credits_cost,
+                'message' => $canDownload['reason'],
+                'credits_required' => $canDownload['cost'] ?? 0,
                 'credits_available' => $user->credits,
+                'ratio' => $this->creditsService->getRatio($user),
+                'min_ratio' => config('bbs.files.min_ratio', 0.0),
             ], 403);
         }
 
-        // Charge download and increment counter
-        $file->chargeDownload($user);
+        // Charge download and record stats
+        $this->creditsService->chargeDownload($user, $file);
 
         // Generate temporary download URL
         $downloadUrl = Storage::temporaryUrl($file->storage_path, now()->addMinutes(5));
@@ -232,6 +262,7 @@ class FileController extends Controller
             'success' => true,
             'download_url' => $downloadUrl,
             'filename' => $file->filename,
+            'credits_remaining' => $user->fresh()->credits,
         ]);
     }
 
@@ -464,17 +495,18 @@ class FileController extends Controller
     public function ratio(Request $request): JsonResponse
     {
         $user = $request->user();
-
-        $uploads = $user->total_uploads;
-        $downloads = $user->total_downloads;
-        $ratio = $downloads > 0 ? round($uploads / $downloads, 2) : $uploads;
+        $ratioInfo = $this->creditsService->getRatioInfo($user);
 
         return response()->json([
             'success' => true,
-            'uploads' => $uploads,
-            'downloads' => $downloads,
-            'ratio' => $ratio,
+            'uploads' => $ratioInfo['total_uploads'],
+            'downloads' => $ratioInfo['total_downloads'],
+            'upload_bytes' => $ratioInfo['upload_bytes'],
+            'download_bytes' => $ratioInfo['download_bytes'],
+            'ratio' => $ratioInfo['ratio'],
+            'min_ratio' => config('bbs.files.min_ratio', 0.0),
             'credits' => $user->credits,
+            'can_download' => $ratioInfo['can_download'],
         ]);
     }
 

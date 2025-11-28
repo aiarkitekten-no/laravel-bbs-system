@@ -299,6 +299,7 @@ Route::middleware(['locale'])->group(function () {
         Route::prefix('files')->group(function () {
             Route::post('/duplicate-check', [FileController::class, 'duplicateCheck']);
             Route::post('/upload', [FileController::class, 'upload']);
+            Route::get('/ratio', [FileController::class, 'ratio']);
             Route::get('/{fileId}/download', [FileController::class, 'download']);
             Route::post('/requests', [FileController::class, 'createRequest']);
             Route::get('/requests/open', [FileController::class, 'openRequests']);
