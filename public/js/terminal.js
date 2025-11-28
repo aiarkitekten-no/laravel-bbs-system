@@ -2054,14 +2054,651 @@
         print('|Y Software      : |WCustom Laravel + ANSI Terminal|N');
         print('|Y Version       : |W1.0.0|N');
         print('');
-        print('|c Total Users   : |W' + (state.stats?.users || '?') + '|N');
-        print('|c Total Messages: |W' + (state.stats?.messages || '?') + '|N');
-        print('|c Total Files   : |W' + (state.stats?.files || '?') + '|N');
+        
+        // Fetch uptime from API (correct endpoint)
+        try {
+            const status = await api('/health/status');
+            const uptimeStr = status.uptime || 'Unknown';
+            print('|c System Uptime : |G' + uptimeStr + '|N');
+            print('|c Server Time   : |W' + (status.server_time || new Date().toISOString()) + '|N');
+            print('|c Status        : |G' + (status.status || 'healthy').toUpperCase() + '|N');
+            if (status.checks?.php?.version) {
+                print('|c PHP Version   : |W' + status.checks.php.version + '|N');
+            }
+            print('');
+            
+            // Fetch stats separately
+            try {
+                const statsResp = await api('/stats');
+                print('|c Total Users   : |W' + (statsResp.users || '?') + '|N');
+                print('|c Total Messages: |W' + (statsResp.messages || '?') + '|N');
+                print('|c Total Files   : |W' + (statsResp.files || '?') + '|N');
+                print('|c Online Now    : |G' + (statsResp.online || '?') + '|N');
+            } catch (e2) {
+                print('|c Total Users   : |W' + (state.stats?.users || '?') + '|N');
+            }
+        } catch (e) {
+            print('|c System Uptime : |Y(Unable to fetch)|N');
+            print('|c Total Users   : |W' + (state.stats?.users || '?') + '|N');
+            print('|c Total Messages: |W' + (state.stats?.messages || '?') + '|N');
+            print('|c Total Files   : |W' + (state.stats?.files || '?') + '|N');
+        }
+        
+        print('');
+        print('|K───────────────────────────────────────────────────────────────────────|N');
+        print('');
+        print('|Y[D]|N BBS Documentary Links   |Y[W]|N Warez Section   |Y[A]|N ANSI Logon Screens');
+        print('|Y[E]|N Door Game Emulator     |Y[Q]|N Return to Main Menu');
         print('');
         print('|B▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄|N');
+        
+        const cmd = await promptUser('|cChoice|N');
+        await handleSystemInfoMenu(cmd.toLowerCase());
     }
     
-    let currentBulletinList = [];
+    function formatUptime(seconds) {
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        
+        if (days > 0) {
+            return `${days}d ${hours}h ${mins}m`;
+        } else if (hours > 0) {
+            return `${hours}h ${mins}m`;
+        }
+        return `${mins}m`;
+    }
+    
+    async function handleSystemInfoMenu(cmd) {
+        switch (cmd) {
+            case 'd':
+                await showDocumentaryLinks();
+                break;
+            case 'w':
+                await showWarezSection();
+                break;
+            case 'a':
+                await showAnsiLogonScreens();
+                break;
+            case 'e':
+                await showDoorGameEmulator();
+                break;
+            case 'q':
+            case '':
+                goToMainMenu();
+                break;
+            default:
+                print('|rInvalid option.|N');
+                await showSystemInfo();
+        }
+    }
+    
+    async function showDocumentaryLinks() {
+        clearScreen();
+        print('|B▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|W BBS Documentary Links |B▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|N');
+        print('');
+        print('|Y  "BBS: The Documentary" by Jason Scott (2005)|N');
+        print('|c  The definitive 8-part documentary about the BBS era.|N');
+        print('|c  Watch free at: |Whttps://www.bbsdocumentary.com/|N');
+        print('');
+        print('|K───────────────────────────────────────────────────────────────────────|N');
+        print('');
+        print('|G  Part 1: |WBaud - The Early Days|N');
+        print('|G  Part 2: |WSysops - Running a BBS|N');
+        print('|G  Part 3: |WMake It Pay - Shareware & Commerce|N');
+        print('|G  Part 4: |WFidoNet - The Network|N');
+        print('|G  Part 5: |WArtscene - ANSI & ASCII Art|N');
+        print('|G  Part 6: |WHPAC - Hacking, Phreaking, Anarchy, Cracking|N');
+        print('|G  Part 7: |WNo Stranded Whales - Gaming & Social|N');
+        print('|G  Part 8: |WJUST - The End of the BBS Era|N');
+        print('');
+        print('|K───────────────────────────────────────────────────────────────────────|N');
+        print('');
+        print('|Y  Other Resources:|N');
+        print('|c  • textfiles.com     |W- Archive of BBS text files|N');
+        print('|c  • 16colo.rs         |W- ANSI art archive|N');
+        print('|c  • telnetbbsguide.com|W- Modern telnet BBS list|N');
+        print('|c  • Break Into Chat   |W- BBS history podcast|N');
+        print('');
+        print('|B▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄|N');
+        
+        await promptUser('|cPress ENTER to return|N');
+        await showSystemInfo();
+    }
+    
+    async function showWarezSection() {
+        clearScreen();
+        print('');
+        await sleep(500);
+        print('|R▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|N');
+        print('|R█                                                                      █|N');
+        print('|R█|Y    ██╗    ██╗ █████╗ ██████╗ ███████╗███████╗                       |R█|N');
+        print('|R█|Y    ██║    ██║██╔══██╗██╔══██╗██╔════╝╚══███╔╝                       |R█|N');
+        print('|R█|Y    ██║ █╗ ██║███████║██████╔╝█████╗    ███╔╝                        |R█|N');
+        print('|R█|Y    ██║███╗██║██╔══██║██╔══██╗██╔══╝   ███╔╝                         |R█|N');
+        print('|R█|Y    ╚███╔███╔╝██║  ██║██║  ██║███████╗███████╗                       |R█|N');
+        print('|R█|Y     ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝                       |R█|N');
+        print('|R█                                                                      █|N');
+        print('|R█|W              S E C T I O N   0 1   -   E L I T E                    |R█|N');
+        print('|R█                                                                      █|N');
+        print('|R▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄|N');
+        print('');
+        await sleep(800);
+        
+        playBell();
+        print('');
+        print('|R╔═══════════════════════════════════════════════════════════════════════╗|N');
+        print('|R║|N                                                                       |R║|N');
+        print('|R║|W            █████╗  ██████╗ ██████╗███████╗███████╗███████╗            |R║|N');
+        print('|R║|W           ██╔══██╗██╔════╝██╔════╝██╔════╝██╔════╝██╔════╝            |R║|N');
+        print('|R║|W           ███████║██║     ██║     █████╗  ███████╗███████╗            |R║|N');
+        print('|R║|W           ██╔══██║██║     ██║     ██╔══╝  ╚════██║╚════██║            |R║|N');
+        print('|R║|W           ██║  ██║╚██████╗╚██████╗███████╗███████║███████║            |R║|N');
+        print('|R║|W           ╚═╝  ╚═╝ ╚═════╝ ╚═════╝╚══════╝╚══════╝╚══════╝            |R║|N');
+        print('|R║|N                                                                       |R║|N');
+        print('|R║|Y              ██████╗ ███████╗███╗   ██╗██╗███████╗██████╗             |R║|N');
+        print('|R║|Y              ██╔══██╗██╔════╝████╗  ██║██║██╔════╝██╔══██╗            |R║|N');
+        print('|R║|Y              ██║  ██║█████╗  ██╔██╗ ██║██║█████╗  ██║  ██║            |R║|N');
+        print('|R║|Y              ██║  ██║██╔══╝  ██║╚██╗██║██║██╔══╝  ██║  ██║            |R║|N');
+        print('|R║|Y              ██████╔╝███████╗██║ ╚████║██║███████╗██████╔╝            |R║|N');
+        print('|R║|Y              ╚═════╝ ╚══════╝╚═╝  ╚═══╝╚═╝╚══════╝╚═════╝             |R║|N');
+        print('|R║|N                                                                       |R║|N');
+        print('|R╚═══════════════════════════════════════════════════════════════════════╝|N');
+        print('');
+        await sleep(500);
+        
+        print('|K  Your IP address has been logged.|N');
+        print('|K  FBI, Interpol, and your mom have been notified.|N');
+        print('');
+        await sleep(1000);
+        
+        print('|G  Just kidding! This is a |YNOSTALGIC JOKE|G from the BBS era. 😄|N');
+        print('|c  Back in the day, many BBSes had fake "warez" sections that|N');
+        print('|c  would display scary ACCESS DENIED messages to would-be pirates.|N');
+        print('');
+        print('|K  Remember: Piracy is still illegal. Support software creators!|N');
+        print('');
+        
+        await promptUser('|cPress ENTER to return (you\'re not in trouble)|N');
+        await showSystemInfo();
+    }
+    
+    async function showAnsiLogonScreens() {
+        clearScreen();
+        print('|B▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|W Classic ANSI Logon Screens |B▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|N');
+        print('');
+        
+        const screens = [
+            { id: 1, name: 'PUNKTET Welcome', style: 'Modern' },
+            { id: 2, name: 'Retro 90s Style', style: 'Classic' },
+            { id: 3, name: 'Cyberpunk', style: 'Futuristic' },
+            { id: 4, name: 'Matrix Rain', style: 'Animated' },
+            { id: 5, name: 'Demoscene', style: 'Artistic' }
+        ];
+        
+        screens.forEach((s, i) => {
+            print(`|Y${i + 1}|N. ${s.name.padEnd(25)} |c[${s.style}]|N`);
+        });
+        
+        print('');
+        print('|Y[#]|N Preview screen  |Y[S]|N Set as default  |Y[Q]|N Return');
+        print('');
+        
+        const cmd = await promptUser('|cChoice|N');
+        
+        if (cmd === 'q' || cmd === '') {
+            await showSystemInfo();
+            return;
+        }
+        
+        const num = parseInt(cmd);
+        if (num >= 1 && num <= screens.length) {
+            await showAnsiPreview(num);
+        } else {
+            print('|rInvalid selection.|N');
+            await showAnsiLogonScreens();
+        }
+    }
+    
+    async function showAnsiPreview(screenNum) {
+        clearScreen();
+        
+        switch (screenNum) {
+            case 1: // PUNKTET Welcome
+                await showPunktetLogon();
+                break;
+            case 2: // Retro 90s
+                await showRetro90sLogon();
+                break;
+            case 3: // Cyberpunk
+                await showCyberpunkLogon();
+                break;
+            case 4: // Matrix
+                await showMatrixLogon();
+                break;
+            case 5: // Demoscene
+                await showDemosceneLogon();
+                break;
+        }
+        
+        print('');
+        await promptUser('|cPress ENTER to return|N');
+        await showAnsiLogonScreens();
+    }
+    
+    async function showPunktetLogon() {
+        print('|B▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|N');
+        print('|B█                                                                         █|N');
+        print('|B█|G  ██████╗ ██╗   ██╗███╗   ██╗██╗  ██╗████████╗███████╗████████╗        |B█|N');
+        print('|B█|G  ██╔══██╗██║   ██║████╗  ██║██║ ██╔╝╚══██╔══╝██╔════╝╚══██╔══╝        |B█|N');
+        print('|B█|G  ██████╔╝██║   ██║██╔██╗ ██║█████╔╝    ██║   █████╗     ██║           |B█|N');
+        print('|B█|G  ██╔═══╝ ██║   ██║██║╚██╗██║██╔═██╗    ██║   ██╔══╝     ██║           |B█|N');
+        print('|B█|G  ██║     ╚██████╔╝██║ ╚████║██║  ██╗   ██║   ███████╗   ██║           |B█|N');
+        print('|B█|G  ╚═╝      ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝   ╚═╝   ╚══════╝   ╚═╝           |B█|N');
+        print('|B█|N                                                                       |B█|N');
+        print('|B█|Y             ══════ BULLETIN BOARD SYSTEM ══════                       |B█|N');
+        print('|B█|c                 "Where Nostalgia Meets The Future"                    |B█|N');
+        print('|B█                                                                         █|N');
+        print('|B▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄|N');
+    }
+    
+    async function showRetro90sLogon() {
+        print('|R ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄|N');
+        print('|R █|Y ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░|R█|N');
+        print('|R █|Y ░|W ▄▄▄   ▄   ▄ ▄   ▄ ▄  ▄ ▄▄▄▄▄ ▄▄▄▄ ▄▄▄▄▄                          |Y░|R█|N');
+        print('|R █|Y ░|W █  █  █   █ █▀▄ █ █ █    █   █      █                             |Y░|R█|N');
+        print('|R █|Y ░|W █▀▀▀  █   █ █ ▀▄█ ██     █   █▀▀    █                             |Y░|R█|N');
+        print('|R █|Y ░|W █     ▀▄▄▄▀ █   █ █ █    █   █▄▄▄   █                             |Y░|R█|N');
+        print('|R █|Y ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░|R█|N');
+        print('|R █|C                    ★ BULLETIN BOARD SYSTEM ★                         |R█|N');
+        print('|R █|G       Running: |WRemoteAccess 2.62|G  •  Nodes: |W6|G  •  Est: |W2025       |R█|N');
+        print('|R █|M ────────────────────────────────────────────────────────────────────|R█|N');
+        print('|R █|W                  Call us at: telnet://punktet.no                    |R█|N');
+        print('|R ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|N');
+    }
+    
+    async function showCyberpunkLogon() {
+        print('|M╔══════════════════════════════════════════════════════════════════════════╗|N');
+        print('|M║|K▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓|M║|N');
+        print('|M║|K▓|C  ╔═╗ ╦ ╦ ╔╗╔ ╦╔═ ╔╦╗ ╔═╗ ╔╦╗                                        |K▓|M║|N');
+        print('|M║|K▓|C  ╠═╝ ║ ║ ║║║ ╠╩╗  ║  ║╣   ║                                         |K▓|M║|N');
+        print('|M║|K▓|C  ╩   ╚═╝ ╝╚╝ ╩ ╩  ╩  ╚═╝  ╩                                         |K▓|M║|N');
+        print('|M║|K▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓|M║|N');
+        print('|M║|N                                                                          |M║|N');
+        print('|M║|R   ▀▀▀▀▀ |G[NEURAL INTERFACE DETECTED]|R ▀▀▀▀▀                              |M║|N');
+        print('|M║|N                                                                          |M║|N');
+        print('|M║|Y   > WELCOME TO THE GRID, NETRUNNER                                       |M║|N');
+        print('|M║|Y   > JACKING IN...                                                        |M║|N');
+        print('|M║|N                                                                          |M║|N');
+        print('|M╚══════════════════════════════════════════════════════════════════════════╝|N');
+    }
+    
+    async function showMatrixLogon() {
+        // Simple matrix-style rain effect
+        const chars = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ01';
+        
+        for (let i = 0; i < 5; i++) {
+            let line = '';
+            for (let j = 0; j < 70; j++) {
+                const brightness = Math.random();
+                const char = chars[Math.floor(Math.random() * chars.length)];
+                if (brightness > 0.8) {
+                    line += '|W' + char + '|N';
+                } else if (brightness > 0.5) {
+                    line += '|G' + char + '|N';
+                } else {
+                    line += '|K' + char + '|N';
+                }
+            }
+            print(line);
+        }
+        
+        print('');
+        print('|G                    ╔═══════════════════════════════╗|N');
+        print('|G                    ║|W   FOLLOW THE WHITE RABBIT    |G║|N');
+        print('|G                    ║|K        KNOCK KNOCK NEO       |G║|N');
+        print('|G                    ╚═══════════════════════════════╝|N');
+        print('');
+        
+        for (let i = 0; i < 5; i++) {
+            let line = '';
+            for (let j = 0; j < 70; j++) {
+                const char = chars[Math.floor(Math.random() * chars.length)];
+                line += '|K' + char + '|N';
+            }
+            print(line);
+        }
+    }
+    
+    async function showDemosceneLogon() {
+        print('|B                    ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄                          |N');
+        print('|B                   █|C░░░░░░░░░░░░░░░░░░░░░░░░░░|B█                          |N');
+        print('|B                   █|C░|M▄▄▄  ▄  ▄▄▄  ▄▄▄  ▄▄▄ ▄▄▄|C░|B█                          |N');
+        print('|B                   █|C░|M█▄▄  █  █ █  █▄▄  █   █▄▄|C░|B█                          |N');
+        print('|B                   █|C░|M█    █  █ █  █ █  █   █  |C░|B█                          |N');
+        print('|B                   █|C░|M▀▀▀  ▀  ▀▀▀  ▀ ▀  ▀▀▀ ▀▀▀|C░|B█                          |N');
+        print('|B                   █|C░░░░░░░░░░░░░░░░░░░░░░░░░░|B█                          |N');
+        print('|B                    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀                          |N');
+        print('');
+        print('|Y               ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━|N');
+        print('|W                     D E M O S C E N E   S T Y L E|N');
+        print('|c                    Greets to: Future Crew, Triton,|N');
+        print('|c                    Orange, TRSI, Fairlight, Razor1911|N');
+        print('|Y               ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━|N');
+    }
+    
+    // =====================================================
+    // Door Game Emulator - Classic Text Games Recreation
+    // =====================================================
+    
+    async function showDoorGameEmulator() {
+        clearScreen();
+        print('|R▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|W DOOR GAME EMULATOR |R▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|N');
+        print('');
+        print('|c  Experience classic BBS door games without leaving PUNKTET!|N');
+        print('|K  These are simplified recreations for nostalgic purposes.|N');
+        print('');
+        print('|K───────────────────────────────────────────────────────────────────────|N');
+        print('');
+        print('|Y 1|N. |GGUESS THE NUMBER|N     - Classic guessing game');
+        print('|Y 2|N. |YRPS BATTLE|N          - Rock, Paper, Scissors');
+        print('|Y 3|N. |MCOIN FLIP|N           - Test your luck');
+        print('|Y 4|N. |CHIGH-LOW CARDS|N      - Card game classic');
+        print('|Y 5|N. |WWORD SCRAMBLE|N       - Unscramble BBS terms');
+        print('');
+        print('|K───────────────────────────────────────────────────────────────────────|N');
+        print('');
+        print('|K  Note: These are quick mini-games. For the full door games|N');
+        print('|K  experience, check out the Games section from the main menu!|N');
+        print('');
+        print('|Y[#]|N Play game  |Y[Q]|N Return');
+        
+        const cmd = await promptUser('|cChoice|N');
+        
+        switch (cmd) {
+            case '1':
+                await playGuessNumber();
+                break;
+            case '2':
+                await playRPSBattle();
+                break;
+            case '3':
+                await playCoinFlip();
+                break;
+            case '4':
+                await playHighLowCards();
+                break;
+            case '5':
+                await playWordScramble();
+                break;
+            case 'q':
+            case '':
+                await showSystemInfo();
+                return;
+            default:
+                print('|rInvalid selection.|N');
+                await showDoorGameEmulator();
+        }
+    }
+    
+    async function playGuessNumber() {
+        clearScreen();
+        print('|G▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|W GUESS THE NUMBER |G▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|N');
+        print('');
+        print('|c  I\'m thinking of a number between 1 and 100.|N');
+        print('|c  You have 7 guesses to find it!|N');
+        print('');
+        
+        const target = Math.floor(Math.random() * 100) + 1;
+        let guesses = 7;
+        let won = false;
+        
+        while (guesses > 0 && !won) {
+            const guess = await promptUser(`|Y${guesses}|W guesses left. Your guess|N`);
+            const num = parseInt(guess);
+            
+            if (isNaN(num) || num < 1 || num > 100) {
+                print('|rPlease enter a number between 1 and 100.|N');
+                continue;
+            }
+            
+            guesses--;
+            
+            if (num === target) {
+                won = true;
+                print('');
+                print('|G★★★ CORRECT! ★★★|N');
+                print(`|WYou found it in ${7 - guesses} guesses!|N`);
+            } else if (num < target) {
+                print('|YHigher!|N');
+            } else {
+                print('|YLower!|N');
+            }
+        }
+        
+        if (!won) {
+            print('');
+            print(`|rGame Over! The number was |W${target}|r.|N`);
+        }
+        
+        print('');
+        await promptUser('|cPress ENTER to continue|N');
+        await showDoorGameEmulator();
+    }
+    
+    async function playRPSBattle() {
+        clearScreen();
+        print('|Y▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|W ROCK PAPER SCISSORS |Y▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|N');
+        print('');
+        print('|Y[R]|Nock  |Y[P]|Naper  |Y[S]|Ncissors  |Y[Q]|Nuit');
+        print('');
+        
+        let playerScore = 0;
+        let cpuScore = 0;
+        const choices = ['rock', 'paper', 'scissors'];
+        const emojis = { rock: '🪨', paper: '📄', scissors: '✂️' };
+        
+        while (playerScore < 3 && cpuScore < 3) {
+            print(`|c  Score: You |G${playerScore}|c - |R${cpuScore}|c CPU  (First to 3)|N`);
+            const input = await promptUser('|WYour choice|N');
+            
+            let player;
+            if (input === 'r') player = 'rock';
+            else if (input === 'p') player = 'paper';
+            else if (input === 's') player = 'scissors';
+            else if (input === 'q') { await showDoorGameEmulator(); return; }
+            else { print('|rInvalid choice. R, P, or S.|N'); continue; }
+            
+            const cpu = choices[Math.floor(Math.random() * 3)];
+            
+            print(`|W  You: ${emojis[player]} ${player.toUpperCase()}|N`);
+            print(`|K  CPU: ${emojis[cpu]} ${cpu.toUpperCase()}|N`);
+            
+            if (player === cpu) {
+                print('|Y  TIE!|N');
+            } else if (
+                (player === 'rock' && cpu === 'scissors') ||
+                (player === 'paper' && cpu === 'rock') ||
+                (player === 'scissors' && cpu === 'paper')
+            ) {
+                print('|G  You WIN this round!|N');
+                playerScore++;
+            } else {
+                print('|R  CPU wins this round!|N');
+                cpuScore++;
+            }
+            print('');
+        }
+        
+        if (playerScore === 3) {
+            print('|G★★★ VICTORY! You won the match! ★★★|N');
+        } else {
+            print('|R✖✖✖ DEFEAT! CPU won the match! ✖✖✖|N');
+        }
+        
+        print('');
+        await promptUser('|cPress ENTER to continue|N');
+        await showDoorGameEmulator();
+    }
+    
+    async function playCoinFlip() {
+        clearScreen();
+        print('|M▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|W COIN FLIP |M▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|N');
+        print('');
+        print('|c  Guess correctly 5 times in a row to win!|N');
+        print('');
+        
+        let streak = 0;
+        
+        while (streak < 5) {
+            print(`|Y  Current streak: ${streak}/5|N`);
+            const guess = await promptUser('|W[H]eads or [T]ails?|N');
+            
+            if (guess !== 'h' && guess !== 't') {
+                print('|rEnter H or T.|N');
+                continue;
+            }
+            
+            print('');
+            print('|c  Flipping coin...|N');
+            await sleep(500);
+            
+            // Coin animation
+            const frames = ['|Y🌑|N', '|W🌓|N', '|Y🌕|N', '|W🌗|N'];
+            for (let i = 0; i < 8; i++) {
+                print(`  ${frames[i % 4]}`, { newline: false });
+                await sleep(100);
+                print('\r    \r', { newline: false });
+            }
+            
+            const result = Math.random() < 0.5 ? 'h' : 't';
+            const resultText = result === 'h' ? 'HEADS' : 'TAILS';
+            
+            print(`|W  Result: ${resultText}!|N`);
+            
+            if (guess === result) {
+                streak++;
+                print('|G  Correct!|N');
+            } else {
+                print('|R  Wrong! Streak broken!|N');
+                streak = 0;
+            }
+            print('');
+        }
+        
+        print('|G★★★ AMAZING! 5 in a row! You\'re a coin master! ★★★|N');
+        print('');
+        await promptUser('|cPress ENTER to continue|N');
+        await showDoorGameEmulator();
+    }
+    
+    async function playHighLowCards() {
+        clearScreen();
+        print('|C▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|W HIGH-LOW CARDS |C▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|N');
+        print('');
+        print('|c  Guess if the next card will be HIGHER or LOWER.|N');
+        print('|c  Get 5 correct to win!|N');
+        print('');
+        
+        const cards = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        const getValue = (card) => cards.indexOf(card);
+        
+        let current = cards[Math.floor(Math.random() * cards.length)];
+        let score = 0;
+        
+        while (score < 5) {
+            print(`|W  Current card: |Y[${current}]|W   Score: ${score}/5|N`);
+            const guess = await promptUser('|W[H]igher or [L]ower?|N');
+            
+            if (guess !== 'h' && guess !== 'l') {
+                print('|rEnter H or L.|N');
+                continue;
+            }
+            
+            const next = cards[Math.floor(Math.random() * cards.length)];
+            print(`|c  Next card: |G[${next}]|N`);
+            
+            const currentVal = getValue(current);
+            const nextVal = getValue(next);
+            
+            const isHigher = nextVal > currentVal;
+            const isCorrect = (guess === 'h' && isHigher) || (guess === 'l' && !isHigher && nextVal !== currentVal);
+            
+            if (nextVal === currentVal) {
+                print('|Y  Same card! Push - no change.|N');
+            } else if (isCorrect) {
+                score++;
+                print('|G  Correct!|N');
+            } else {
+                print('|R  Wrong! Game Over!|N');
+                print('');
+                await promptUser('|cPress ENTER to continue|N');
+                await showDoorGameEmulator();
+                return;
+            }
+            
+            current = next;
+            print('');
+        }
+        
+        print('|G★★★ You won! Card shark! ★★★|N');
+        print('');
+        await promptUser('|cPress ENTER to continue|N');
+        await showDoorGameEmulator();
+    }
+    
+    async function playWordScramble() {
+        clearScreen();
+        print('|W▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|W WORD SCRAMBLE |W▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|N');
+        print('');
+        print('|c  Unscramble the BBS-related word!|N');
+        print('');
+        
+        const words = [
+            { word: 'SYSOP', hint: 'System operator' },
+            { word: 'MODEM', hint: 'Connection device' },
+            { word: 'ANSI', hint: 'Terminal graphics' },
+            { word: 'FIDONET', hint: 'BBS network' },
+            { word: 'TELNET', hint: 'Remote protocol' },
+            { word: 'ZMODEM', hint: 'File transfer' },
+            { word: 'DOOR', hint: 'External game' },
+            { word: 'PACKET', hint: 'Offline reader data' },
+            { word: 'TAGLINE', hint: 'Message signature' },
+            { word: 'XMODEM', hint: 'Old file transfer' }
+        ];
+        
+        const selected = words[Math.floor(Math.random() * words.length)];
+        const scrambled = selected.word.split('').sort(() => Math.random() - 0.5).join('');
+        
+        print(`|Y  Scrambled: ${scrambled}|N`);
+        print(`|K  Hint: ${selected.hint}|N`);
+        print('');
+        
+        let attempts = 3;
+        while (attempts > 0) {
+            const guess = await promptUser(`|W(${attempts} tries) Your answer|N`);
+            
+            if (guess.toUpperCase() === selected.word) {
+                print('');
+                print('|G★★★ CORRECT! ★★★|N');
+                print('');
+                await promptUser('|cPress ENTER to continue|N');
+                await showDoorGameEmulator();
+                return;
+            }
+            
+            attempts--;
+            if (attempts > 0) {
+                print('|R  Wrong! Try again.|N');
+            }
+        }
+        
+        print('');
+        print(`|R  Out of tries! The word was: |W${selected.word}|N`);
+        print('');
+        await promptUser('|cPress ENTER to continue|N');
+        await showDoorGameEmulator();
+    }
 
     async function showBulletins() {
         try {

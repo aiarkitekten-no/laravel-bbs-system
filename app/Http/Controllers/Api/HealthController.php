@@ -322,21 +322,58 @@ class HealthController extends Controller
     protected function getUptime(): string
     {
         try {
-            if (file_exists('/proc/uptime')) {
-                $uptime = file_get_contents('/proc/uptime');
-                $seconds = (int) explode(' ', $uptime)[0];
-                
-                $days = floor($seconds / 86400);
-                $hours = floor(($seconds % 86400) / 3600);
-                $minutes = floor(($seconds % 3600) / 60);
-                
-                return "{$days}d {$hours}h {$minutes}m";
+            // Prøv /proc/uptime først (mest nøyaktig)
+            if (@file_exists('/proc/uptime')) {
+                $uptime = @file_get_contents('/proc/uptime');
+                if ($uptime !== false) {
+                    $seconds = (int) explode(' ', $uptime)[0];
+                    return $this->formatUptime($seconds);
+                }
             }
+            
+            // Fallback: exec uptime kommando
+            if (function_exists('exec')) {
+                $output = @exec('uptime -s 2>/dev/null');
+                if ($output) {
+                    $bootTime = strtotime($output);
+                    if ($bootTime) {
+                        $seconds = time() - $bootTime;
+                        return $this->formatUptime($seconds);
+                    }
+                }
+            }
+            
+            // Fallback: BBS uptime (tid siden første request i dag)
+            $startTime = Cache::get('bbs_start_time');
+            if (!$startTime) {
+                $startTime = now()->timestamp;
+                Cache::put('bbs_start_time', $startTime, now()->addYear());
+            }
+            $seconds = now()->timestamp - $startTime;
+            return $this->formatUptime($seconds) . ' (session)';
+            
         } catch (\Exception $e) {
             // Ignore
         }
         
         return 'Unknown';
+    }
+
+    /**
+     * Formater sekunder til lesbar uptime-streng
+     */
+    protected function formatUptime(int $seconds): string
+    {
+        $days = floor($seconds / 86400);
+        $hours = floor(($seconds % 86400) / 3600);
+        $minutes = floor(($seconds % 3600) / 60);
+        
+        $parts = [];
+        if ($days > 0) $parts[] = "{$days}d";
+        if ($hours > 0) $parts[] = "{$hours}h";
+        $parts[] = "{$minutes}m";
+        
+        return implode(' ', $parts);
     }
 
     /**
