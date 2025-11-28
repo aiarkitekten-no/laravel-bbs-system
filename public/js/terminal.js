@@ -966,24 +966,25 @@
             
             const speed = speedNames[state.baudRate] || '56000';
             print(`|GCONNECT ${speed}/ARQ/V34/LAPM/V42BIS|N`);
+            
+            // Stop the modem sound - we're connected!
+            stopSound('modemConnect');
+            
             await Promise.race([sleep(800), skipPromise]);
         }
         
-        // Clean up listener and stop sound if skipped
+        // Clean up listener and stop sound
         if (skipListener) {
             document.removeEventListener('keydown', skipListener);
         }
         
-        // Stop modem sound if user skipped
-        if (skipped) {
-            stopSound('modemConnect');
-        }
+        // Always stop modem sound when handshake is done
+        stopSound('modemConnect');
         
         if (!skipped) {
             print('');
             print('|Y  Verifying credentials...|N');
             await sleep(300);
-            // Let the modem sound fade naturally - it's about 20 seconds long
         }
         
         return skipped;
@@ -1291,7 +1292,37 @@
         print('|G╚══════════════════════════════════════════════════════════════════════╝|N');
         print('');
         
-        await sleep(1500);
+        // Wait for user to continue or auto-continue after 60 seconds
+        print('|K───────────────────────────────────────────────────────────────────────|N');
+        print('|c                Press any key to continue (or wait 60 seconds)         |N');
+        print('|K───────────────────────────────────────────────────────────────────────|N');
+        
+        await waitForKeyOrTimeout(60000);
+    }
+    
+    // Helper function to wait for keypress or timeout
+    function waitForKeyOrTimeout(timeout) {
+        return new Promise(resolve => {
+            let resolved = false;
+            
+            const keyHandler = (e) => {
+                if (!resolved) {
+                    resolved = true;
+                    document.removeEventListener('keydown', keyHandler);
+                    resolve();
+                }
+            };
+            
+            document.addEventListener('keydown', keyHandler);
+            
+            setTimeout(() => {
+                if (!resolved) {
+                    resolved = true;
+                    document.removeEventListener('keydown', keyHandler);
+                    resolve();
+                }
+            }, timeout);
+        });
     }
 
     // =====================================================
