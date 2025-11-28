@@ -775,6 +775,9 @@
         const password = await promptUser('|cPassword|N', true);
         
         try {
+            // Start modem handshake animation
+            const skipped = await showLoginHandshake();
+            
             setStatus('Authenticating...');
             const result = await api('/auth/login', 'POST', { email, password });
             
@@ -784,14 +787,13 @@
             state.connectedAt = Date.now();
             localStorage.setItem('punktet_token', result.token);
             
-            playModemSound();
-            print('');
-            print('|G╔════════════════════════════════════════════════════════════╗|N');
-            print('|G║|Y         ★ ★ ★  LOGIN SUCCESSFUL  ★ ★ ★                    |G║|N');
-            print('|G║|N                                                          |G║|N');
-            print('|G║|c   Welcome back, |W' + (state.user.handle || state.user.username).padEnd(20) + '|c                  |G║|N');
-            print('|G╚════════════════════════════════════════════════════════════╝|N');
-            print('');
+            if (!skipped) {
+                await showLoginSuccess(state.user.handle || state.user.username);
+            } else {
+                print('');
+                print('|G✓ Login successful!|N Welcome back, |W' + (state.user.handle || state.user.username) + '|N');
+                print('');
+            }
             
             updateUserDisplay();
             goToMainMenu();
@@ -803,9 +805,183 @@
             setStatus('');
         }
     }
+    
+    // Modem handshake animation for login - the nostalgic experience!
+    async function showLoginHandshake() {
+        let skipped = false;
+        let skipListener = null;
+        
+        // Allow skipping with any key
+        const skipPromise = new Promise(resolve => {
+            skipListener = (e) => {
+                if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') {
+                    skipped = true;
+                    resolve();
+                }
+            };
+            document.addEventListener('keydown', skipListener);
+        });
+        
+        print('');
+        print('|K─────────────────────────────────────────────────────────────────────|N');
+        print('|c                    Press [SPACE] or [ESC] to skip                   |N');
+        print('|K─────────────────────────────────────────────────────────────────────|N');
+        print('');
+        
+        // AT Commands sequence
+        const atCommands = [
+            { cmd: 'ATZ', response: 'OK', delay: 400 },
+            { cmd: 'AT&F', response: 'OK', delay: 300 },
+            { cmd: 'ATE1V1', response: 'OK', delay: 250 },
+            { cmd: 'AT+MS=V34', response: 'OK', delay: 300 },
+            { cmd: 'ATX4', response: 'OK', delay: 200 },
+            { cmd: 'ATDT punktet.no', response: null, delay: 500 }
+        ];
+        
+        for (const at of atCommands) {
+            if (skipped) break;
+            print(`|c${at.cmd}|N`);
+            await Promise.race([sleep(at.delay), skipPromise]);
+            if (skipped) break;
+            if (at.response) {
+                print(`|G${at.response}|N`);
+            }
+        }
+        
+        if (!skipped) {
+            print('');
+            print('|YDIALING...|N');
+            await Promise.race([sleep(400), skipPromise]);
+        }
+        
+        // Play modem sound (the iconic screech!)
+        if (!skipped) {
+            playModemSound();
+        }
+        
+        if (!skipped) {
+            print('');
+            print('|c  ┌─────────────────────────────────────────────────────────────────┐|N');
+            print('|c  │|N                                                                 |c│|N');
+            
+            // Carrier detect sequence
+            const carrierStages = [
+                '|Y  │   RING... RING...                                               │|N',
+                '|Y  │   CARRIER DETECT                                                │|N',
+                '|c  │   ▒▒▒▒▒▒▒▒▒▒▒▒ Training sequence ▒▒▒▒▒▒▒▒▒▒▒▒                   │|N',
+            ];
+            
+            for (const stage of carrierStages) {
+                if (skipped) break;
+                print(stage);
+                await Promise.race([sleep(600), skipPromise]);
+            }
+        }
+        
+        // Handshake negotiation with animated characters
+        if (!skipped) {
+            const handshakeFrames = [
+                '░░▒▒▓▓██▓▓▒▒░░ V.34 Handshake ░░▒▒▓▓██▓▓▒▒░░',
+                '▒▒▓▓██▓▓▒▒░░░░ V.34 Handshake ▒▒▓▓██▓▓▒▒░░░░',
+                '▓▓██▓▓▒▒░░░░▒▒ V.34 Handshake ▓▓██▓▓▒▒░░░░▒▒',
+                '██▓▓▒▒░░░░▒▒▓▓ V.34 Handshake ██▓▓▒▒░░░░▒▒▓▓',
+            ];
+            
+            for (let i = 0; i < 8 && !skipped; i++) {
+                print(`|M  │   ${handshakeFrames[i % handshakeFrames.length]}   │|N`, { newline: false });
+                await Promise.race([sleep(150), skipPromise]);
+                if (!skipped) {
+                    // Clear line and move up
+                    print('\r                                                                              \r', { newline: false });
+                }
+            }
+            
+            if (!skipped) {
+                print('|G  │   ████████████████ CONNECTED ████████████████                  │|N');
+            }
+        }
+        
+        // Protocol negotiation
+        if (!skipped) {
+            print('|c  │|N                                                                 |c│|N');
+            await Promise.race([sleep(300), skipPromise]);
+            
+            const protocols = [
+                'Error correction: V.42bis',
+                'Data compression: MNP5',
+                'Protocol: 8-N-1'
+            ];
+            
+            for (const proto of protocols) {
+                if (skipped) break;
+                print(`|c  │   |K${proto.padEnd(55)}|c│|N`);
+                await Promise.race([sleep(200), skipPromise]);
+            }
+        }
+        
+        if (!skipped) {
+            print('|c  │|N                                                                 |c│|N');
+            print('|c  └─────────────────────────────────────────────────────────────────┘|N');
+            print('');
+            
+            // Final connect speed
+            const speedNames = {
+                0: '115200',
+                2400: '2400',
+                9600: '9600',
+                14400: '14400',
+                28800: '28800',
+                56000: '56000'
+            };
+            
+            const speed = speedNames[state.baudRate] || '56000';
+            print(`|GCONNECT ${speed}/ARQ/V34/LAPM/V42BIS|N`);
+            await Promise.race([sleep(400), skipPromise]);
+        }
+        
+        // Clean up listener
+        if (skipListener) {
+            document.removeEventListener('keydown', skipListener);
+        }
+        
+        if (!skipped) {
+            print('');
+            print('|Y  Verifying credentials...|N');
+            await sleep(300);
+        }
+        
+        return skipped;
+    }
+    
+    async function showLoginSuccess(username) {
+        print('');
+        await sleep(200);
+        
+        // ASCII art success banner
+        print('|G╔══════════════════════════════════════════════════════════════════════╗|N');
+        print('|G║|N                                                                      |G║|N');
+        print('|G║|Y    █████╗  ██████╗ ██████╗███████╗███████╗███████╗                   |G║|N');
+        print('|G║|Y   ██╔══██╗██╔════╝██╔════╝██╔════╝██╔════╝██╔════╝                   |G║|N');
+        print('|G║|Y   ███████║██║     ██║     █████╗  ███████╗███████╗                   |G║|N');
+        print('|G║|Y   ██╔══██║██║     ██║     ██╔══╝  ╚════██║╚════██║                   |G║|N');
+        print('|G║|Y   ██║  ██║╚██████╗╚██████╗███████╗███████║███████║                   |G║|N');
+        print('|G║|Y   ╚═╝  ╚═╝ ╚═════╝ ╚═════╝╚══════╝╚══════╝╚══════╝                   |G║|N');
+        print('|G║|N                                                                      |G║|N');
+        print('|G║|c         G R A N T E D   -   W E L C O M E   B A C K                 |G║|N');
+        print('|G║|N                                                                      |G║|N');
+        print('|G║|W                    ' + username.padEnd(20) + '                           |G║|N');
+        print('|G║|N                                                                      |G║|N');
+        print('|G╚══════════════════════════════════════════════════════════════════════╝|N');
+        print('');
+        
+        await sleep(800);
+    }
 
     async function guestLogin() {
         try {
+            // Start modem handshake animation
+            const skipped = await showLoginHandshake();
+            
             setStatus('Connecting as guest...');
             const result = await api('/auth/guest', 'POST');
             
@@ -815,13 +991,24 @@
             state.connectedAt = Date.now();
             localStorage.setItem('punktet_token', result.token);
             
-            playModemSound();
-            print('');
-            print('|G╔════════════════════════════════════════════════════════════╗|N');
-            print('|G║|Y              ★ CONNECTED AS GUEST ★                       |G║|N');
-            print('|G║|K              Some features are limited                    |G║|N');
-            print('|G╚════════════════════════════════════════════════════════════╝|N');
-            print('');
+            if (!skipped) {
+                print('');
+                await sleep(200);
+                print('|G╔══════════════════════════════════════════════════════════════════════╗|N');
+                print('|G║|N                                                                      |G║|N');
+                print('|G║|Y           ★ ★ ★  GUEST ACCESS GRANTED  ★ ★ ★                        |G║|N');
+                print('|G║|N                                                                      |G║|N');
+                print('|G║|K             Some features are limited for guests                    |G║|N');
+                print('|G║|K               Register to unlock full access!                       |G║|N');
+                print('|G║|N                                                                      |G║|N');
+                print('|G╚══════════════════════════════════════════════════════════════════════╝|N');
+                print('');
+                await sleep(600);
+            } else {
+                print('');
+                print('|G✓ Connected as guest|N (some features limited)');
+                print('');
+            }
             
             updateUserDisplay();
             goToMainMenu();
@@ -902,6 +1089,10 @@
         
         try {
             setStatus('Creating account...');
+            
+            // Show modem handshake for registration too
+            const skipped = await showLoginHandshake();
+            
             const result = await api('/auth/register', 'POST', {
                 handle,
                 email,
@@ -916,15 +1107,31 @@
             state.node = result.data?.node || result.node;
             localStorage.setItem('punktet_token', state.token);
             
-            playModemSound();
-            print('');
-            print('|g╔══════════════════════════════════════════════════════════════╗|N');
-            print('|g║        ★ ★ ★  ACCOUNT CREATED SUCCESSFULLY!  ★ ★ ★           ║|N');
-            print('|g║                                                              ║|N');
-            print('|g║|c   Welcome to PUNKTET BBS, |W' + handle.padEnd(20) + '|c              |g║|N');
-            print('|g║|K   You are connected on Node ' + (state.node || '?') + '                            |g║|N');
-            print('|g╚══════════════════════════════════════════════════════════════╝|N');
-            print('');
+            if (!skipped) {
+                print('');
+                await sleep(200);
+                print('|G╔══════════════════════════════════════════════════════════════════════╗|N');
+                print('|G║|N                                                                      |G║|N');
+                print('|G║|Y   ███╗   ██╗███████╗██╗    ██╗    ██╗   ██╗███████╗███████╗██████╗   |G║|N');
+                print('|G║|Y   ████╗  ██║██╔════╝██║    ██║    ██║   ██║██╔════╝██╔════╝██╔══██╗  |G║|N');
+                print('|G║|Y   ██╔██╗ ██║█████╗  ██║ █╗ ██║    ██║   ██║███████╗█████╗  ██████╔╝  |G║|N');
+                print('|G║|Y   ██║╚██╗██║██╔══╝  ██║███╗██║    ██║   ██║╚════██║██╔══╝  ██╔══██╗  |G║|N');
+                print('|G║|Y   ██║ ╚████║███████╗╚███╔███╔╝    ╚██████╔╝███████║███████╗██║  ██║  |G║|N');
+                print('|G║|Y   ╚═╝  ╚═══╝╚══════╝ ╚══╝╚══╝      ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝  |G║|N');
+                print('|G║|N                                                                      |G║|N');
+                print('|G║|c             A C C O U N T   C R E A T E D !                          |G║|N');
+                print('|G║|N                                                                      |G║|N');
+                print('|G║|W           Welcome to PUNKTET BBS, ' + handle.padEnd(20) + '          |G║|N');
+                print('|G║|K               You are connected on Node ' + String(state.node || '?').padEnd(3) + '                    |G║|N');
+                print('|G║|N                                                                      |G║|N');
+                print('|G╚══════════════════════════════════════════════════════════════════════╝|N');
+                print('');
+                await sleep(800);
+            } else {
+                print('');
+                print('|G✓ Account created!|N Welcome to PUNKTET, |W' + handle + '|N');
+                print('');
+            }
             
             updateUserDisplay();
             goToMainMenu();
