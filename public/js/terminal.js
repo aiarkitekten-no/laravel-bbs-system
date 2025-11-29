@@ -1436,6 +1436,7 @@
             'w': showWhosOnline,
             'u': showUserSettings,
             'g': logout,  // Goodbye/Logoff
+            '!': showSysopMenu, // SysOp menu (hidden command)
             '': showMainMenu
         };
 
@@ -2445,6 +2446,233 @@
             
         } catch (error) {
             print(`|rError: ${error.message}|N`);
+        }
+    }
+
+    // =====================================================
+    // SYSOP MENU (Hidden command: !)
+    // =====================================================
+
+    async function showSysopMenu() {
+        // Check if user is SysOp
+        if (!state.user || state.user.level !== 'SYSOP') {
+            print('|R*** ACCESS DENIED ***|N');
+            print('|rYou do not have SysOp privileges.|N');
+            return;
+        }
+
+        clearScreen();
+        print('|R▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|W SYSOP CONTROL PANEL |R▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|N');
+        print('');
+        print('|Y ★ Welcome, SysOp! ★|N');
+        print('');
+
+        // Fetch dashboard stats
+        try {
+            setStatus('Loading SysOp dashboard...');
+            const result = await api('/sysop/dashboard');
+            const data = result.data || result;
+            
+            print('|c─── System Stats ───|N');
+            print('|K Categories : |W' + (data.categories || 0) + '|N');
+            print('|K Stories    : |W' + (data.stories || 0) + '|N');
+            print('|K Threads    : |W' + (data.threads || 0) + '|N');
+            print('|K Messages   : |W' + (data.messages || 0) + '|N');
+            print('|K Users      : |W' + (data.users || 0) + '|N');
+        } catch (e) {
+            print('|K Stats unavailable|N');
+        } finally {
+            setStatus('');
+        }
+
+        print('');
+        print('|R─── Content Generation ───|N');
+        print('');
+        print('|Y[1]|N Generate 15 Norwegian Categories (no.*)');
+        print('|Y[2]|N Generate 15 English Categories (en.*)');
+        print('|Y[3]|N Generate AI Story');
+        print('|Y[4]|N Generate Forum Post with AI Replies (5-14 svar)');
+        print('');
+        print('|R─── System Management ───|N');
+        print('');
+        print('|Y[5]|N View Activity Logs');
+        print('|Y[6]|N Clear Cache');
+        print('|Y[7]|N System Diagnostics');
+        print('');
+        print('|Y[Q]|N Return to Main Menu');
+        print('');
+        print('|R▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄|N');
+
+        const cmd = await promptUser('|RSysOp Command|N');
+        await handleSysopMenu(cmd.toLowerCase());
+    }
+
+    async function handleSysopMenu(cmd) {
+        switch (cmd) {
+            case '1':
+                await generateCategories('no');
+                break;
+            case '2':
+                await generateCategories('en');
+                break;
+            case '3':
+                await generateStory();
+                break;
+            case '4':
+                await generateForumPost();
+                break;
+            case '5':
+                await showActivityLogs();
+                break;
+            case '6':
+                await clearSystemCache();
+                break;
+            case '7':
+                await showDiagnostics();
+                break;
+            case 'q':
+            case '':
+                showMainMenu();
+                return;
+            default:
+                print('|rInvalid option.|N');
+        }
+        
+        // Return to SysOp menu after action
+        await promptUser('|KPress Enter to continue...|N');
+        await showSysopMenu();
+    }
+
+    async function generateCategories(language) {
+        const langName = language === 'no' ? 'Norwegian' : 'English';
+        print('');
+        print('|Y Generating 15 ' + langName + ' categories...|N');
+        print('');
+
+        try {
+            setStatus('Generating categories...');
+            const result = await api('/sysop/generate-categories', 'POST', { language });
+            
+            if (result.success) {
+                print('|G✓ ' + result.message + '|N');
+                print('|c Total categories now: ' + result.total + '|N');
+            } else {
+                print('|r' + (result.message || 'Failed to generate categories') + '|N');
+            }
+        } catch (error) {
+            print('|rError: ' + error.message + '|N');
+        } finally {
+            setStatus('');
+        }
+    }
+
+    async function generateStory() {
+        print('');
+        print('|Y Generating AI Story...|N');
+        print('|K This may take a moment...|N');
+        print('');
+
+        try {
+            setStatus('AI is writing a story...');
+            const result = await api('/sysop/generate-story', 'POST', {});
+            
+            if (result.success) {
+                print('|G✓ ' + result.message + '|N');
+                print('|c Title: |W' + result.story.title + '|N');
+                print('|c Category: |W' + result.story.category + '|N');
+            } else {
+                print('|r' + (result.message || 'Failed to generate story') + '|N');
+            }
+        } catch (error) {
+            print('|rError: ' + error.message + '|N');
+        } finally {
+            setStatus('');
+        }
+    }
+
+    async function generateForumPost() {
+        print('');
+        
+        // Ask for optional topic
+        const topic = await promptUser('|cEnter topic (or press Enter for random)|N');
+        
+        print('');
+        print('|Y Generating Forum Post with AI Replies...|N');
+        print('|K This may take 30-60 seconds...|N');
+        print('');
+
+        try {
+            setStatus('AI personalities are debating...');
+            const payload = topic ? { topic } : {};
+            const result = await api('/sysop/generate-forum-post', 'POST', payload);
+            
+            if (result.success) {
+                print('|G✓ ' + result.message + '|N');
+                print('|c Title: |W' + result.thread.title + '|N');
+                print('|c Category: |W' + result.thread.category + '|N');
+                print('|c Replies: |W' + result.thread.replies + '|N');
+            } else {
+                print('|r' + (result.message || 'Failed to generate forum post') + '|N');
+            }
+        } catch (error) {
+            print('|rError: ' + error.message + '|N');
+        } finally {
+            setStatus('');
+        }
+    }
+
+    async function showActivityLogs() {
+        print('');
+        print('|Y Loading activity logs...|N');
+
+        try {
+            const result = await api('/admin/activity-logs');
+            const logs = result.data || result.logs || [];
+            
+            print('');
+            print('|c─── Recent Activity ───|N');
+            
+            if (logs.length === 0) {
+                print('|K No recent activity.|N');
+            } else {
+                logs.slice(0, 15).forEach(log => {
+                    const time = new Date(log.created_at).toLocaleString('no-NO');
+                    print('|K' + time + '|N |W' + (log.user?.handle || 'System') + '|N: ' + log.action);
+                });
+            }
+        } catch (error) {
+            print('|rError: ' + error.message + '|N');
+        }
+    }
+
+    async function clearSystemCache() {
+        print('');
+        print('|Y Clearing system cache...|N');
+
+        try {
+            const result = await api('/admin/clear-cache', 'POST', {});
+            print('|G✓ Cache cleared successfully!|N');
+        } catch (error) {
+            print('|rError: ' + error.message + '|N');
+        }
+    }
+
+    async function showDiagnostics() {
+        print('');
+        print('|Y Running system diagnostics...|N');
+
+        try {
+            const result = await api('/admin/diagnostics');
+            const data = result.data || result;
+            
+            print('');
+            print('|c─── System Diagnostics ───|N');
+            print('|K PHP Version  : |W' + (data.php_version || 'Unknown') + '|N');
+            print('|K Memory Usage : |W' + (data.memory_usage || 'Unknown') + '|N');
+            print('|K Disk Space   : |W' + (data.disk_free || 'Unknown') + '|N');
+            print('|K Database     : |G' + (data.database_status || 'Connected') + '|N');
+        } catch (error) {
+            print('|rError: ' + error.message + '|N');
         }
     }
     

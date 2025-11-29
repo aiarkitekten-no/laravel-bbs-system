@@ -293,6 +293,16 @@ Route::middleware(['locale'])->group(function () {
                 // RSS Feed
                 Route::get('/rss', [AdminController::class, 'rssFeed']);
             });
+
+            // ==========================================
+            // SYSOP TOOLS (Content Generation)
+            // ==========================================
+            Route::prefix('sysop')->group(function () {
+                Route::get('/dashboard', [App\Http\Controllers\Api\SysopController::class, 'dashboard']);
+                Route::post('/generate-categories', [App\Http\Controllers\Api\SysopController::class, 'generateCategories']);
+                Route::post('/generate-story', [App\Http\Controllers\Api\SysopController::class, 'generateStory']);
+                Route::post('/generate-forum-post', [App\Http\Controllers\Api\SysopController::class, 'generateForumPost']);
+            });
         });
 
         // ==========================================
