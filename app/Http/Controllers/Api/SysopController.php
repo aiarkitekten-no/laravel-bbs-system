@@ -292,37 +292,26 @@ class SysopController extends Controller
                 'body' => $mainPost['content'],
             ]);
 
-            // Generate 5-14 replies
-            $replyCount = rand(5, 14);
-            $usedPersonalities = [$mainAuthor['name']];
-
-            for ($i = 0; $i < $replyCount; $i++) {
-                // Select a personality (can repeat some)
-                $replyAuthor = $personalities[array_rand($personalities)];
-                
-                // Sometimes reply to specific user
-                $replyTo = $i > 0 && rand(0, 1) ? $usedPersonalities[array_rand($usedPersonalities)] : null;
-                
-                $reply = $this->generateReplyContent($category, $topic, $replyAuthor, $mainPost['content'], $replyTo);
-                
+            // Generate 5-10 replies in ONE API call to avoid timeout
+            $replyCount = rand(5, 10);
+            $replies = $this->generateAllReplies($category, $topic, $mainPost['content'], $personalities, $replyCount);
+            
+            foreach ($replies as $reply) {
                 Message::create([
                     'thread_id' => $thread->id,
                     'user_id' => 1,
                     'body' => $reply,
                 ]);
-
-                $usedPersonalities[] = $replyAuthor['name'];
-                
-                // Small delay to spread timestamps
-                usleep(100000); // 0.1 second
+                usleep(50000); // Small delay for timestamps
             }
 
-            $thread->update(['reply_count' => $replyCount, 'last_message_at' => now()]);
-            $category->increment('message_count', $replyCount + 1);
+            $actualReplyCount = count($replies);
+            $thread->update(['reply_count' => $actualReplyCount, 'last_message_at' => now()]);
+            $category->increment('message_count', $actualReplyCount + 1);
 
             return response()->json([
                 'success' => true,
-                'message' => "Forum-tråd opprettet med {$replyCount} svar!",
+                'message' => "Forum-tråd opprettet med {$actualReplyCount} svar!",
                 'thread' => [
                     'id' => $thread->id,
                     'title' => $thread->subject,
@@ -444,5 +433,85 @@ Skriv KUN svaret, ingen tittel.";
         ]);
 
         return $response->json()['choices'][0]['message']['content'] ?? 'Interessant poeng!';
+    }
+
+    /**
+     * Generate all replies in a single API call to avoid timeout
+     */
+    private function generateAllReplies($category, $topic, $originalPost, $personalities, $count): array
+    {
+        // Build personality list for prompt
+        $personalityList = [];
+        for ($i = 0; $i < $count; $i++) {
+            $p = $personalities[array_rand($personalities)];
+            $tones = ['saklig', 'sarkastisk', 'entusiastisk', 'kritisk', 'humoristisk', 'provoserende', 'flamende'];
+            $tone = $tones[array_rand($tones)];
+            $personalityList[] = "Svar {$i}+1: {$p['name']} ({$p['style']}) - tone: {$tone}";
+        }
+        $personalityString = implode("\n", $personalityList);
+
+        $prompt = "Du skal generere {$count} forum-svar på et BBS-innlegg.
+
+TEMA: \"{$topic}\"
+KATEGORI: \"{$category->name}\"
+
+ORIGINALINNLEGGET (kort sammendrag): 
+" . substr($originalPost, 0, 500) . "
+
+GENERER {$count} FORSKJELLIGE SVAR fra disse personlighetene:
+{$personalityString}
+
+KRAV FOR HVERT SVAR:
+- 50-200 ord
+- Personlig og engasjert stil
+- Noen er enige, noen uenige, noen kommer med nytt perspektiv
+- Bruk BBS-slang og 90-talls referanser av og til
+- Noen svar kan være flamende/provoserende, andre saklige
+- Skriv på norsk (med noen engelske tech-uttrykk)
+
+FORMAT (VIKTIG - følg dette NØYAKTIG):
+===SVAR===
+[Forfatter]: [Svartekst]
+===SVAR===
+[Forfatter]: [Svartekst]
+osv...
+
+Start hvert svar med ===SVAR=== på egen linje.";
+
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . config('services.openai.api_key'),
+            'Content-Type' => 'application/json',
+        ])->timeout(90)->post('https://api.openai.com/v1/chat/completions', [
+            'model' => config('services.openai.model', 'gpt-4o-mini'),
+            'messages' => [
+                ['role' => 'user', 'content' => $prompt],
+            ],
+            'max_tokens' => 3000,
+            'temperature' => 0.95,
+        ]);
+
+        $content = $response->json()['choices'][0]['message']['content'] ?? '';
+        
+        // Parse replies
+        $replies = [];
+        $parts = preg_split('/===SVAR===/i', $content);
+        
+        foreach ($parts as $part) {
+            $part = trim($part);
+            if (strlen($part) > 20) { // Skip empty or too short
+                $replies[] = $part;
+            }
+        }
+
+        // If parsing failed, return at least some content
+        if (count($replies) < 3) {
+            return [
+                "Interessant poeng! Dette var noe å tenke på.",
+                "LOL, typisk BBS diskusjon dette her. Men du har et poeng.",
+                "Uenig! Dette høres ut som noe en som aldri har brukt en 56k modem ville sagt.",
+            ];
+        }
+
+        return array_slice($replies, 0, $count);
     }
 }

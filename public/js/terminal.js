@@ -2003,12 +2003,19 @@
             print('|B╚════════════════════════════════════════════════════════════════════╝|N');
             print('');
 
+            // Display initial game state
             if (result.game_state) {
-                displayGameState(result.game_state);
+                if (game.slug === 'hangman') {
+                    displayHangmanState(result.game_state);
+                } else {
+                    displayGameState(result.game_state);
+                }
             }
 
             print('');
-            print('|cEnter your move or action. Type |YQUIT|c to exit game.|N');
+            if (game.slug !== 'hangman') {
+                print('|cEnter your move or action. Type |YQUIT|c to exit game.|N');
+            }
             state.currentArea = 'game-playing';
             setPrompt(gameTitle);
 
@@ -2056,32 +2063,60 @@
 
         try {
             setStatus('Processing move...');
-            const result = await api(`/games/${currentGame.slug}/play`, 'POST', {
-                action: cmd
-            });
+            
+            // Build request based on game type
+            let requestBody;
+            if (currentGame.slug === 'hangman') {
+                // Hangman expects: action='guess', data={letter: 'X'}
+                requestBody = {
+                    action: 'guess',
+                    data: { letter: cmd.toUpperCase() }
+                };
+            } else {
+                requestBody = { action: cmd };
+            }
+            
+            const response = await api(`/games/${currentGame.slug}/play`, 'POST', requestBody);
+            
+            // API returns 'result', not 'game_state'
+            const gameState = response.result || response.game_state || response;
 
-            if (result.game_state) {
-                clearScreen();
-                print(`|Y=== ${currentGame.title} ===|N`);
+            clearScreen();
+            const gameTitle = currentGame.title || currentGame.name || 'Game';
+            print(`|Y=== ${gameTitle} ===|N`);
+            print('');
+            
+            // Display Hangman-specific state
+            if (currentGame.slug === 'hangman' && gameState.display) {
+                displayHangmanState(gameState);
+            } else {
+                displayGameState(gameState);
+            }
+
+            if (gameState.game_over) {
                 print('');
-                displayGameState(result.game_state);
-
-                if (result.game_over) {
-                    print('');
-                    print('|Y╔════════════════════════════════════════╗|N');
-                    print('|Y║         G A M E   O V E R             ║|N');
-                    print('|Y╚════════════════════════════════════════╝|N');
-                    print(`|cFinal Score: |W${result.final_score || 0}|N`);
-                    
-                    if (result.high_score) {
-                        print('|G★ NEW HIGH SCORE! ★|N');
+                print('|Y╔════════════════════════════════════════╗|N');
+                print('|Y║         G A M E   O V E R             ║|N');
+                print('|Y╚════════════════════════════════════════╝|N');
+                
+                if (gameState.won) {
+                    print('|G★ YOU WIN! ★|N');
+                } else {
+                    print('|rYou lost!|N');
+                    if (gameState.word) {
+                        print(`|cThe word was: |W${gameState.word}|N`);
                     }
-                    
-                    print('');
-                    print('Press any key to continue...');
-                    currentGame = null;
-                    state.currentArea = 'games';
                 }
+                
+                print(`|cFinal Score: |W${gameState.score || 0}|N`);
+                
+                print('');
+                print('|KPress Enter to continue...|N');
+                await promptUser('');
+                currentGame = null;
+                state.currentArea = 'games';
+                await showGames();
+                return;
             }
 
         } catch (error) {
@@ -2089,6 +2124,85 @@
         } finally {
             setStatus('');
         }
+    }
+    
+    function displayHangmanState(state) {
+        // Draw hangman ASCII art based on wrong guesses
+        const hangmanStages = [
+            // 0 wrong
+            `
+  +---+
+  |   |
+      |
+      |
+      |
+      |
+=========`,
+            // 1 wrong - head
+            `
+  +---+
+  |   |
+  O   |
+      |
+      |
+      |
+=========`,
+            // 2 wrong - body
+            `
+  +---+
+  |   |
+  O   |
+  |   |
+      |
+      |
+=========`,
+            // 3 wrong - left arm
+            `
+  +---+
+  |   |
+  O   |
+ /|   |
+      |
+      |
+=========`,
+            // 4 wrong - right arm
+            `
+  +---+
+  |   |
+  O   |
+ /|\\  |
+      |
+      |
+=========`,
+            // 5 wrong - left leg
+            `
+  +---+
+  |   |
+  O   |
+ /|\\  |
+ /    |
+      |
+=========`,
+            // 6 wrong - right leg (dead)
+            `
+  +---+
+  |   |
+  O   |
+ /|\\  |
+ / \\  |
+      |
+=========`
+        ];
+        
+        const stage = Math.min(state.wrong || 0, 6);
+        print('|c' + hangmanStages[stage] + '|N');
+        print('');
+        print('|YWord:|N  ' + (state.display || '_ _ _ _ _'));
+        print('');
+        print('|cGuessed:|N ' + (state.guessed || []).join(', '));
+        print('|cWrong:|N   ' + (state.wrong || 0) + '/' + (state.max_wrong || 6));
+        print('');
+        print('|KEnter a letter to guess:|N');
     }
 
     async function showHighScores() {
