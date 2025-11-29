@@ -299,6 +299,7 @@ Route::middleware(['locale'])->group(function () {
             // ==========================================
             Route::prefix('sysop')->group(function () {
                 Route::get('/dashboard', [App\Http\Controllers\Api\SysopController::class, 'dashboard']);
+                Route::get('/categories', [App\Http\Controllers\Api\SysopController::class, 'listCategories']);
                 Route::post('/generate-categories', [App\Http\Controllers\Api\SysopController::class, 'generateCategories']);
                 Route::post('/generate-story', [App\Http\Controllers\Api\SysopController::class, 'generateStory']);
                 Route::post('/generate-forum-post', [App\Http\Controllers\Api\SysopController::class, 'generateForumPost']);

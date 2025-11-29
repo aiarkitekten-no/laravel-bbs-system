@@ -1992,11 +1992,14 @@
             setStatus('Loading game...');
             const result = await api(`/games/${game.slug}/start`, 'POST');
             
+            const gameTitle = (game.title || game.name || 'Unknown Game').substring(0, 64);
+            const gameDesc = (game.description || 'No description available').substring(0, 64);
+            
             clearScreen();
             print('|B╔════════════════════════════════════════════════════════════════════╗|N');
-            print(`|B║|Y  ${game.title.padEnd(64)}|B║|N`);
+            print(`|B║|Y  ${gameTitle.padEnd(64)}|B║|N`);
             print('|B╠════════════════════════════════════════════════════════════════════╣|N');
-            print(`|B║|N  ${(game.description || '').substring(0, 64).padEnd(64)}|B║|N`);
+            print(`|B║|N  ${gameDesc.padEnd(64)}|B║|N`);
             print('|B╚════════════════════════════════════════════════════════════════════╝|N');
             print('');
 
@@ -2007,7 +2010,7 @@
             print('');
             print('|cEnter your move or action. Type |YQUIT|c to exit game.|N');
             state.currentArea = 'game-playing';
-            setPrompt(game.title);
+            setPrompt(gameTitle);
 
         } catch (error) {
             print(`|rError starting game: ${error.message}|N`);
@@ -2596,26 +2599,63 @@
     async function generateForumPost() {
         print('');
         
-        // Ask for optional topic
-        const topic = await promptUser('|cEnter topic (or press Enter for random)|N');
-        
-        print('');
-        print('|Y Generating Forum Post with AI Replies...|N');
-        print('|K This may take 30-60 seconds...|N');
-        print('');
-
+        // First, show available categories
         try {
-            setStatus('AI personalities are debating...');
-            const payload = topic ? { topic } : {};
+            setStatus('Loading categories...');
+            const catResult = await api('/sysop/categories');
+            const categories = catResult.categories || [];
+            
+            if (categories.length === 0) {
+                print('|r Ingen kategorier funnet! Opprett kategorier først (valg 1 eller 2).|N');
+                setStatus('');
+                return;
+            }
+            
+            print('|c─── Tilgjengelige kategorier ───|N');
+            print('');
+            categories.forEach((cat, i) => {
+                print('|Y' + String(i + 1).padStart(2) + '|N. ' + cat.name + ' |K(' + cat.messages + ' meldinger)|N');
+            });
+            print('');
+            print('|Y 0|N. Tilfeldig kategori');
+            print('');
+            
+            const catChoice = await promptUser('|cVelg kategori (nummer)|N');
+            const catNum = parseInt(catChoice);
+            
+            let selectedCategory = null;
+            if (catNum === 0 || isNaN(catNum)) {
+                selectedCategory = null; // Random
+                print('|K Bruker tilfeldig kategori...|N');
+            } else if (catNum > 0 && catNum <= categories.length) {
+                selectedCategory = categories[catNum - 1];
+                print('|K Valgt: ' + selectedCategory.name + '|N');
+            } else {
+                print('|r Ugyldig valg, bruker tilfeldig.|N');
+            }
+            
+            // Ask for optional topic
+            const topic = await promptUser('|cEmne for innlegget (eller Enter for tilfeldig)|N');
+            
+            print('');
+            print('|Y Genererer Forum-innlegg med AI-svar...|N');
+            print('|K Dette kan ta 30-60 sekunder...|N');
+            print('');
+
+            setStatus('AI-personligheter debatterer...');
+            const payload = {};
+            if (selectedCategory) payload.category_id = selectedCategory.id;
+            if (topic) payload.topic = topic;
+            
             const result = await api('/sysop/generate-forum-post', 'POST', payload);
             
             if (result.success) {
                 print('|G✓ ' + result.message + '|N');
-                print('|c Title: |W' + result.thread.title + '|N');
-                print('|c Category: |W' + result.thread.category + '|N');
-                print('|c Replies: |W' + result.thread.replies + '|N');
+                print('|c Tittel: |W' + result.thread.title + '|N');
+                print('|c Kategori: |W' + result.thread.category + '|N');
+                print('|c Svar: |W' + result.thread.replies + '|N');
             } else {
-                print('|r' + (result.message || 'Failed to generate forum post') + '|N');
+                print('|r' + (result.message || 'Kunne ikke generere forum-innlegg') + '|N');
             }
         } catch (error) {
             print('|rError: ' + error.message + '|N');

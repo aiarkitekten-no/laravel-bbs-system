@@ -34,6 +34,24 @@ class SysopController extends Controller
     }
 
     /**
+     * List all categories for forum post generation
+     */
+    public function listCategories(): JsonResponse
+    {
+        $categories = Category::orderBy('sort_order')->get(['id', 'slug', 'name_no', 'name_en', 'message_count']);
+        
+        return response()->json([
+            'success' => true,
+            'categories' => $categories->map(fn($c) => [
+                'id' => $c->id,
+                'name' => $c->name_no ?: $c->name_en,
+                'slug' => $c->slug,
+                'messages' => $c->message_count,
+            ]),
+        ]);
+    }
+
+    /**
      * Generate 15 new categories (Norwegian or English)
      */
     public function generateCategories(Request $request): JsonResponse
@@ -255,15 +273,16 @@ class SysopController extends Controller
             $mainAuthor = $personalities[array_rand($personalities)];
             $mainPost = $this->generateForumPostContent($category, $topic, $mainAuthor, true);
 
-            // Create thread
+            // Create thread (using correct field names from model)
             $thread = MessageThread::create([
                 'category_id' => $category->id,
-                'title' => $mainPost['title'],
-                'started_by' => 1, // SysOp user ID
+                'user_id' => 1, // SysOp user ID
+                'subject' => $mainPost['title'],
                 'reply_count' => 0,
                 'view_count' => rand(10, 100),
-                'is_pinned' => false,
+                'is_sticky' => false,
                 'is_locked' => false,
+                'last_message_at' => now(),
             ]);
 
             // Create main message
@@ -302,7 +321,7 @@ class SysopController extends Controller
                 usleep(100000); // 0.1 second
             }
 
-            $thread->update(['reply_count' => $replyCount]);
+            $thread->update(['reply_count' => $replyCount, 'last_message_at' => now()]);
             $category->increment('message_count', $replyCount + 1);
 
             return response()->json([
@@ -310,8 +329,8 @@ class SysopController extends Controller
                 'message' => "Forum-tråd opprettet med {$replyCount} svar!",
                 'thread' => [
                     'id' => $thread->id,
-                    'title' => $mainPost['title'],
-                    'category' => $category->name,
+                    'title' => $thread->subject,
+                    'category' => $category->name_no ?: $category->name_en,
                     'replies' => $replyCount,
                 ],
             ]);
