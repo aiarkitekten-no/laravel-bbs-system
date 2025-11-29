@@ -787,15 +787,16 @@
     async function doLogin(input) {
         print('');
         
-        const email = await promptUser('|cEmail|N');
+        const login = await promptUser('|cEmail or Handle|N');
         const password = await promptUser('|cPassword|N', true);
         
         try {
-            // Start modem handshake animation
-            const skipped = await showLoginHandshake();
-            
+            // First validate credentials before showing the animation
             setStatus('Authenticating...');
-            const result = await api('/auth/login', 'POST', { email, password });
+            const result = await api('/auth/login', 'POST', { login, password });
+            
+            // Only show handshake animation AFTER successful auth
+            const skipped = await showLoginHandshake();
             
             state.token = result.token;
             state.user = result.user;
