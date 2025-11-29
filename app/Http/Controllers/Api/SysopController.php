@@ -289,9 +289,7 @@ class SysopController extends Controller
             $mainMessage = Message::create([
                 'thread_id' => $thread->id,
                 'user_id' => 1,
-                'author_name' => $mainAuthor['name'],
-                'content' => $mainPost['content'],
-                'is_ai_generated' => true,
+                'body' => $mainPost['content'],
             ]);
 
             // Generate 5-14 replies
@@ -310,9 +308,7 @@ class SysopController extends Controller
                 Message::create([
                     'thread_id' => $thread->id,
                     'user_id' => 1,
-                    'author_name' => $replyAuthor['name'],
-                    'content' => $reply,
-                    'is_ai_generated' => true,
+                    'body' => $reply,
                 ]);
 
                 $usedPersonalities[] = $replyAuthor['name'];

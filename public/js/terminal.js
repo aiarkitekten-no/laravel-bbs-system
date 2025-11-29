@@ -2056,7 +2056,7 @@
 
         try {
             setStatus('Processing move...');
-            const result = await api(`/games/${currentGame.slug}/action`, 'POST', {
+            const result = await api(`/games/${currentGame.slug}/play`, 'POST', {
                 action: cmd
             });
 
