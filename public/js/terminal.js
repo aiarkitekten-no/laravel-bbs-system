@@ -106,7 +106,25 @@
             const result = await response.json();
             
             if (!response.ok) {
-                throw new Error(result.message || 'API Error');
+                // Extract error message from various API response formats
+                let errorMsg = result.message || 'Request failed';
+                
+                // Handle validation errors
+                if (result.errors) {
+                    const firstError = Object.values(result.errors)[0];
+                    if (Array.isArray(firstError)) {
+                        errorMsg = firstError[0];
+                    } else {
+                        errorMsg = firstError;
+                    }
+                }
+                
+                throw new Error(errorMsg);
+            }
+            
+            // Some endpoints return success: false with 200 status
+            if (result.success === false) {
+                throw new Error(result.message || 'Operation failed');
             }
             
             return result;
