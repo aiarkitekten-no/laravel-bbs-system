@@ -813,20 +813,30 @@
             setStatus('Authenticating...');
             const result = await api('/auth/login', 'POST', { login, password });
             
+            // Extract data from response (API returns data in 'data' wrapper)
+            const userData = result.data || result;
+            const token = userData.token || result.token;
+            const user = userData.user || result.user;
+            const node = userData.node || result.node;
+            
+            if (!token || !user) {
+                throw new Error('Invalid response from server');
+            }
+            
             // Only show handshake animation AFTER successful auth
             const skipped = await showLoginHandshake();
             
-            state.token = result.token;
-            state.user = result.user;
-            state.node = result.node;
+            state.token = token;
+            state.user = user;
+            state.node = node;
             state.connectedAt = Date.now();
-            localStorage.setItem('punktet_token', result.token);
+            localStorage.setItem('punktet_token', token);
             
             if (!skipped) {
-                await showLoginSuccess(state.user.handle || state.user.username);
+                await showLoginSuccess(state.user.handle || state.user.username || state.user.name);
             } else {
                 print('');
-                print('|G✓ Login successful!|N Welcome back, |W' + (state.user.handle || state.user.username) + '|N');
+                print('|G✓ Login successful!|N Welcome back, |W' + (state.user.handle || state.user.username || state.user.name) + '|N');
                 print('');
             }
             
@@ -1041,11 +1051,17 @@
             setStatus('Connecting as guest...');
             const result = await api('/auth/guest', 'POST');
             
-            state.token = result.token;
-            state.user = result.user;
-            state.node = result.node;
+            // Extract data from response (API may return data in 'data' wrapper)
+            const userData = result.data || result;
+            const token = userData.token || result.token;
+            const user = userData.user || result.user;
+            const node = userData.node || result.node;
+            
+            state.token = token;
+            state.user = user;
+            state.node = node;
             state.connectedAt = Date.now();
-            localStorage.setItem('punktet_token', result.token);
+            localStorage.setItem('punktet_token', token);
             
             if (!skipped) {
                 print('');
