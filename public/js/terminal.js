@@ -2454,10 +2454,13 @@
     // =====================================================
 
     async function showSysopMenu() {
-        // Check if user is SysOp
-        if (!state.user || state.user.level !== 'SYSOP') {
+        // Check if user is SysOp (check both level and is_sysop flag)
+        const isSysop = state.user && (state.user.level === 'SYSOP' || state.user.is_sysop === true);
+        
+        if (!isSysop) {
             print('|R*** ACCESS DENIED ***|N');
             print('|rYou do not have SysOp privileges.|N');
+            console.log('SysOp check failed:', state.user);
             return;
         }
 
@@ -3690,8 +3693,8 @@
                     history: chatHistory.slice(-8) // Last 8 messages for context
                 });
 
-                // Clear typing indicator (move cursor up and clear line)
-                // We can't really do this in terminal, so we just print the response
+                // Debug: log the result
+                console.log('Chat API result:', result);
                 
                 const reply = result.reply || result.data?.reply || '*statisk brus*';
                 chatHistory.push({ role: 'assistant', content: reply });
@@ -3708,7 +3711,8 @@
                 print('');
 
             } catch (error) {
-                print('|G<SysOp>|N *modem noise* Beklager, noe gikk galt. Prøv igjen!');
+                console.error('Chat error:', error);
+                print('|G<SysOp>|N *modem noise* Beklager, noe gikk galt: ' + error.message);
                 print('');
             } finally {
                 setStatus('');
