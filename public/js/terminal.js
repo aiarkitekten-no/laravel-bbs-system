@@ -357,8 +357,14 @@
     function playSound(soundId) {
         if (!state.soundEnabled) return;
         
+        // KeyClick uses generated sound (faster and more reliable)
+        if (soundId === 'keyClick') {
+            playGeneratedSound(soundId);
+            return;
+        }
+        
         const audio = elements[soundId];
-        if (audio) {
+        if (audio && audio.duration > 0) {
             // Reset and play the full audio file
             audio.currentTime = 0;
             audio.volume = 0.7;
