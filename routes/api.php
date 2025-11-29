@@ -154,6 +154,9 @@ Route::middleware(['locale'])->group(function () {
             Route::put('/password', [AuthController::class, 'changePassword']);
         });
 
+        // AI SysOp Chat
+        Route::post('/chat/sysop', [App\Http\Controllers\Api\ChatController::class, 'sysopChat']);
+
         // Conferences (authenticated)
         Route::prefix('conferences')->group(function () {
             Route::post('/{conferenceId}/join', [App\Http\Controllers\Api\ConferenceController::class, 'join']);

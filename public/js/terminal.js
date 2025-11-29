@@ -3416,53 +3416,90 @@
     }
     
     async function chatWithSysop() {
-        if (!state.user || state.user.is_guest) {
-            print('|rYou must be logged in to page the SysOp.|N');
-            return;
+        clearScreen();
+        print('|B▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|W Chat with SysOp |B▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|N');
+        print('');
+        print('|Y ★ Terje SysOp is ONLINE! ★|N');
+        print('');
+        print('|c Du er nå i chat med Terje SysOp.|N');
+        print('|K Type |YQUIT|K to exit chat.|N');
+        print('');
+        print('|B────────────────────────────────────────────────────────────────────────|N');
+        print('');
+
+        const chatHistory = [];
+        
+        // Initial greeting from SysOp
+        print('|G<SysOp>|N Hei der, ' + (state.user?.handle || 'gjest') + '! Hva kan jeg hjelpe deg med?');
+        print('');
+
+        while (true) {
+            const input = await promptUser('|Y<' + (state.user?.handle || 'You') + '>|N');
+            
+            if (!input || input.toLowerCase() === 'quit' || input.toLowerCase() === 'q') {
+                print('');
+                print('|G<SysOp>|N Ha det bra! Kos deg på BBS\'en! *vinker*');
+                print('');
+                break;
+            }
+
+            // Add user message to history
+            chatHistory.push({ role: 'user', content: input });
+
+            // Show typing indicator
+            print('|K<SysOp> *skriver...*|N');
+
+            try {
+                setStatus('SysOp tenker...');
+                const result = await api('/chat/sysop', 'POST', {
+                    message: input,
+                    history: chatHistory.slice(-8) // Last 8 messages for context
+                });
+
+                // Clear typing indicator (move cursor up and clear line)
+                // We can't really do this in terminal, so we just print the response
+                
+                const reply = result.reply || result.data?.reply || '*statisk brus*';
+                chatHistory.push({ role: 'assistant', content: reply });
+
+                // Print SysOp's reply with word wrap
+                const wrappedReply = wordWrap(reply, 60);
+                wrappedReply.forEach((line, idx) => {
+                    if (idx === 0) {
+                        print('|G<SysOp>|N ' + line);
+                    } else {
+                        print('        ' + line);
+                    }
+                });
+                print('');
+
+            } catch (error) {
+                print('|G<SysOp>|N *modem noise* Beklager, noe gikk galt. Prøv igjen!');
+                print('');
+            } finally {
+                setStatus('');
+            }
         }
 
-        clearScreen();
-        print('|B▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|W Page SysOp |B▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀|N');
-        print('');
-        
-        try {
-            setStatus('Paging SysOp...');
-            await api('/sysop/page', 'POST', {
-                user_id: state.user.id,
-                node: state.node
-            });
-            
-            print('|Y ★ Paging SysOp... ★|N');
-            print('');
-            print('|c The SysOp has been notified of your request.|N');
-            print('|c If available, they will respond shortly.|N');
-            print('');
-            print('|K While waiting, you can:|N');
-            print('|K - Leave a message describing your question|N');
-            print('|K - Continue browsing the BBS|N');
-            print('');
-            
-            const msg = await promptUser('|cLeave a message for the SysOp (or press Enter to skip)|N');
-            if (msg && msg.trim()) {
-                await api('/pm/send', 'POST', {
-                    recipient: 'sysop',
-                    subject: 'SysOp Page Request',
-                    content: msg.trim()
-                });
-                print('|G✓ Message sent to SysOp.|N');
-            }
-            
-        } catch (error) {
-            print('|Y Paging SysOp...|N');
-            print('');
-            print('|c The SysOp has been notified.|N');
-            print('|K Note: SysOp may not always be available.|N');
-        } finally {
-            setStatus('');
-        }
-        
-        print('');
         print('|B▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄|N');
+    }
+    
+    // Helper function for word wrapping
+    function wordWrap(text, maxWidth) {
+        const words = text.split(' ');
+        const lines = [];
+        let currentLine = '';
+
+        words.forEach(word => {
+            if ((currentLine + ' ' + word).trim().length <= maxWidth) {
+                currentLine = (currentLine + ' ' + word).trim();
+            } else {
+                if (currentLine) lines.push(currentLine);
+                currentLine = word;
+            }
+        });
+        if (currentLine) lines.push(currentLine);
+        return lines.length ? lines : [''];
     }
 
     async function showOneliners() {
